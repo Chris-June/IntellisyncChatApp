@@ -245,33 +245,38 @@ const ChatInterface = ({ aiPersona }) => {
       </div>
 
       {/* Feature Components */}
-      <div className="fixed bottom-[4.5rem] left-0 right-0 px-4">
-        {isAudioInputActive && (
-          <div className="max-w-3xl mx-auto">
-            <AudioInput 
-              onTranscript={(text) => setInputMessage(text)}
-              onClose={() => setIsAudioInputActive(false)}
-            />
-          </div>
-        )}
-        {showImageGen && (
-          <div className="max-w-3xl mx-auto">
-            <ImageGeneration
-              onImageGenerated={(image) => {
-                setShowImageGen(false);
-              }}
-            />
-          </div>
-        )}
-        {showVisionInput && (
-          <div className="max-w-3xl mx-auto">
-            <VisionInput
-              onImageSelect={(image) => {
-                setShowVisionInput(false);
-              }}
-            />
-          </div>
-        )}
+      <div className="fixed bottom-[4.5rem] left-0 right-0 px-4 mb-4">
+        <div className="max-w-3xl mx-auto space-y-4">
+          {isAudioInputActive && (
+            <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 rounded-lg border shadow-lg">
+              <AudioInput 
+                onTranscript={(text) => setInputMessage(text)}
+                onClose={() => setIsAudioInputActive(false)}
+              />
+            </div>
+          )}
+          {showImageGen && (
+            <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 rounded-lg border shadow-lg">
+              <ImageGeneration
+                onImageGenerated={(image) => {
+                  setShowImageGen(false);
+                }}
+                onAddToChat={(newMessages) => {
+                  setMessages(prevMessages => [...prevMessages, ...newMessages]);
+                }}
+              />
+            </div>
+          )}
+          {showVisionInput && (
+            <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 rounded-lg border shadow-lg">
+              <VisionInput
+                onImageSelect={(image) => {
+                  setShowVisionInput(false);
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Input Section - Fixed */}

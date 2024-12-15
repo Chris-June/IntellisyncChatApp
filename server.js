@@ -18,7 +18,7 @@ app.use((req, res, next) => {
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob: https:; " +
+    "img-src 'self' data: blob: https: https://oaidalleapiprodscus.blob.core.windows.net; " +
     "font-src 'self'; " +
     "frame-ancestors 'none'; " +
     "connect-src 'self' https://api.openai.com"
@@ -144,11 +144,21 @@ app.post('/api/generate-image', async (req, res) => {
       size: "1024x1024",
     });
 
-    console.log('Image generated successfully');
+    if (!response.data || !response.data[0] || !response.data[0].url) {
+      throw new Error('Invalid response from OpenAI API');
+    }
+
+    console.log('Image generated successfully. URL:', response.data[0].url);
     res.json({ imageUrl: response.data[0].url });
   } catch (error) {
-    console.error('Error generating image:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error generating image:', error.message);
+    if (error.response) {
+      console.error('OpenAI API Error:', error.response.data);
+    }
+    res.status(500).json({ 
+      error: error.message || 'Failed to generate image',
+      details: error.response?.data || {}
+    });
   }
 });
 

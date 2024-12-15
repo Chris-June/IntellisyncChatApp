@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const ImageGeneration = ({ onImageGenerated, onAddToChat }) => {
+const ImageGeneration = ({ onImageGenerated, onAddToChat = () => {} }) => {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
@@ -24,22 +24,37 @@ const ImageGeneration = ({ onImageGenerated, onAddToChat }) => {
         body: JSON.stringify({ prompt: prompt.trim() }),
       });
 
-      if (!response.ok) throw new Error('Failed to generate image');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate image');
+      }
 
       const data = await response.json();
       
-      // Add the prompt and generated image to chat
-      onAddToChat([
-        { role: 'user', content: `Generate an image: ${prompt.trim()}` },
-        { role: 'assistant', content: '', image: data.imageUrl }
-      ]);
+      if (!data.imageUrl) {
+        throw new Error('No image URL received from server');
+      }
+
+      console.log('Received image URL:', data.imageUrl);
+      
+      // Add the prompt and generated image to chat if onAddToChat is provided
+      if (onAddToChat) {
+        onAddToChat([
+          { role: 'user', content: `Generate an image: ${prompt.trim()}` },
+          { 
+            role: 'assistant', 
+            content: 'Here\'s your generated image:',
+            image: data.imageUrl 
+          }
+        ]);
+      }
       
       setGeneratedImage(data.imageUrl);
       onImageGenerated(data.imageUrl);
       setPrompt('');
     } catch (error) {
       console.error('Error generating image:', error);
-      setError('Failed to generate image. Please try again.');
+      setError(error.message || 'Failed to generate image. Please try again.');
     } finally {
       setIsGenerating(false);
     }
