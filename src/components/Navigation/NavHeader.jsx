@@ -1,92 +1,108 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Menu } from 'lucide-react';
-import { Button } from '../ui/button';
+import {
+  Brain,
+  Code,
+  PenTool,
+  BookOpen,
+  Briefcase,
+  Languages,
+  Heart,
+  Plane,
+  Calculator,
+  Home
+} from 'lucide-react';
+
+const navItems = [
+  {
+    name: 'Home',
+    path: '/',
+    icon: Home
+  },
+  {
+    name: 'General Assistant',
+    path: '/general-assistant',
+    icon: Brain
+  },
+  {
+    name: 'Code Expert',
+    path: '/code-expert',
+    icon: Code
+  },
+  {
+    name: 'Creative Writer',
+    path: '/creative-writer',
+    icon: PenTool
+  },
+  {
+    name: 'Research Assistant',
+    path: '/research-assistant',
+    icon: BookOpen
+  },
+  {
+    name: 'Business Consultant',
+    path: '/business-consultant',
+    icon: Briefcase
+  },
+  {
+    name: 'Language Tutor',
+    path: '/language-tutor',
+    icon: Languages
+  },
+  {
+    name: 'Health Coach',
+    path: '/health-coach',
+    icon: Heart
+  },
+  {
+    name: 'Travel Guide',
+    path: '/travel-guide',
+    icon: Plane
+  },
+  {
+    name: 'Math & Science',
+    path: '/math-science-tutor',
+    icon: Calculator
+  }
+];
 
 const NavHeader = () => {
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-
-  const navItems = [
-    { path: '/general', label: 'General Assistant', description: 'Your helpful AI companion for general tasks' },
-    { path: '/creative', label: 'Creative Writer', description: 'An AI focused on creative writing and storytelling' },
-    { path: '/coder', label: 'Code Expert', description: 'Technical assistant specialized in programming' },
-    { path: '/researcher', label: 'Research Assistant', description: 'Academic and research-focused AI helper' },
-    { path: '/business', label: 'Business Consultant', description: 'Strategic advisor for business and entrepreneurship' },
-    { path: '/language', label: 'Language Tutor', description: 'Expert in language learning and linguistics' },
-    { path: '/health', label: 'Health Coach', description: 'Guide for health, wellness, and lifestyle improvement' },
-    { path: '/travel', label: 'Travel Guide', description: 'Expert in travel planning and global destinations' },
-    { path: '/stem', label: 'Math & Science', description: 'STEM education specialist' },
-  ];
 
   return (
-    <nav className="border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-16">
-          {/* Logo and Brand */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="flex items-center">
-              <span className="text-xl font-bold text-primary">Intellisync Solutions</span>
-            </Link>
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="sm:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Desktop navigation */}
-          <div className="hidden sm:flex sm:flex-1 sm:justify-center">
-            <div className="flex space-x-4 overflow-x-auto">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    'inline-flex items-center px-3 py-2 text-sm font-medium rounded-md',
-                    location.pathname === item.path
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  )}
-                  title={item.description}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
+    <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 max-w-screen-2xl items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link 
+            to="/" 
+            className="mr-6 flex items-center space-x-2"
+          >
+            <Brain className="h-6 w-6" />
+            <span className="hidden font-bold sm:inline-block">
+              Intellisync AI
+            </span>
+          </Link>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "transition-colors hover:text-foreground/80",
+                  location.pathname === item.path
+                    ? "text-foreground"
+                    : "text-foreground/60"
+                )}
+              >
+                <div className="flex items-center space-x-2">
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.name}</span>
+                </div>
+              </Link>
+            ))}
+          </nav>
         </div>
-
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className="sm:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    'block px-3 py-2 rounded-md text-base font-medium',
-                    location.pathname === item.path
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  )}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );

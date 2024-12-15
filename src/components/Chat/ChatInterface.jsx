@@ -1,205 +1,227 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '../ui/button';
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Tooltip } from "../ui/tooltip";
+import { TooltipContent } from "../ui/tooltip";
+import { TooltipTrigger } from "../ui/tooltip";
+import { 
+  Send, 
+  Image as ImageIcon, 
+  Mic, 
+  Camera, 
+  VolumeIcon,
+  HelpCircle
+} from "lucide-react";
 import ChatMessage from './ChatMessage';
-import VisionInput from './VisionInput';
-import ImageGeneration from './ImageGeneration';
-import AudioInput from './AudioInput';
 import NameInputModal from './NameInputModal';
+import AudioInput from './AudioInput';
+import AudioOutput from './AudioOutput';
+import ImageGeneration from './ImageGeneration';
+import VisionInput from './VisionInput';
 
-const API_URL = import.meta.env.VITE_API_URL;
-
-const ChatInterface = ({ systemMessage }) => {
+const ChatInterface = ({ aiPersona }) => {
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedAudio, setSelectedAudio] = useState(null);
-  
-  // Get the assistant name from the system message
-  const assistantName = systemMessage.content.match(/Your name is "([^"]+)"/)?.[1] || 'Assistant';
-  const storageKey = `userName_${assistantName}`;
-
-  const [userName, setUserName] = useState(() => {
-    return localStorage.getItem(storageKey) || '';
-  });
-  
-  const [showNameModal, setShowNameModal] = useState(() => {
-    return !localStorage.getItem(storageKey);
-  });
-  
+  const [inputMessage, setInputMessage] = useState('');
+  const [showModal, setShowModal] = useState(true);
+  const [userName, setUserName] = useState('');
+  const [isAudioInputActive, setIsAudioInputActive] = useState(false);
+  const [isAudioOutputEnabled, setIsAudioOutputEnabled] = useState(false);
+  const [showImageGen, setShowImageGen] = useState(false);
+  const [showVisionInput, setShowVisionInput] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    // If we have a stored name but no messages, show the initial greeting
-    if (userName && messages.length === 0) {
-      setMessages([
-        {
-          role: 'assistant',
-          content: `Hi ${userName}! I'm ${assistantName}. How can I help you today?`
-        }
-      ]);
-    }
-  }, [userName, assistantName]);
-
-  const handleNameSubmit = (name) => {
-    setUserName(name);
-    localStorage.setItem(storageKey, name);
-    setShowNameModal(false);
-    setMessages([
-      {
-        role: 'assistant',
-        content: `Hi ${name}! I'm ${assistantName}. How can I help you today?`
-      }
-    ]);
-  };
-
-  const resetChat = () => {
-    setMessages([]);
-    localStorage.removeItem(storageKey);
-    setUserName('');
-    setShowNameModal(true);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!inputMessage.trim()) return;
 
-    const userMessage = { role: 'user', content: input.trim() };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
+    const newMessage = {
+      content: inputMessage,
+      sender: 'user'
+    };
 
-    try {
-      const response = await fetch(`${API_URL}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            systemMessage,
-            { role: 'system', content: `The user's name is ${userName}. Please refer to them by name occasionally to maintain a personal connection.` },
-            ...messages,
-            userMessage
-          ],
-        }),
-      });
+    setMessages(prev => [...prev, newMessage]);
+    setInputMessage('');
+    
+    // Simulate AI response
+    setTimeout(() => {
+      const aiResponse = {
+        content: `This is a simulated response from ${aiPersona}`,
+        sender: 'ai'
+      };
+      setMessages(prev => [...prev, aiResponse]);
+    }, 1000);
+  };
 
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
-
-      const data = await response.json();
-      setMessages((prev) => [...prev, data]);
-    } catch (error) {
-      console.error('Error:', error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: 'I apologize, but I encountered an error. Please try again.',
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
+  const handleFeatureToggle = (feature) => {
+    switch (feature) {
+      case 'audio-input':
+        setIsAudioInputActive(!isAudioInputActive);
+        setShowImageGen(false);
+        setShowVisionInput(false);
+        break;
+      case 'audio-output':
+        setIsAudioOutputEnabled(!isAudioOutputEnabled);
+        break;
+      case 'image-gen':
+        setShowImageGen(!showImageGen);
+        setIsAudioInputActive(false);
+        setShowVisionInput(false);
+        break;
+      case 'vision-input':
+        setShowVisionInput(!showVisionInput);
+        setIsAudioInputActive(false);
+        setShowImageGen(false);
+        break;
     }
-  };
-
-  const handleAddToChat = (newMessages) => {
-    setMessages((prev) => [...prev, ...newMessages]);
-  };
-
-  const handleImageSelect = (image) => {
-    setSelectedImage(image);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <div className="flex justify-between items-center p-4 border-b">
-        <h1 className="text-xl font-bold">Chat Assistant</h1>
-        <Button
-          variant="outline"
-          onClick={resetChat}
-          className="text-sm"
-        >
-          New Chat
-        </Button>
-      </div>
-      {/* Chat messages - scrollable area */}
-      <div className="flex-1 overflow-y-auto mb-4">
-        <AnimatePresence initial={false}>
+    <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+      <NameInputModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={(name) => {
+          setUserName(name);
+          setShowModal(false);
+        }}
+      />
+      
+      {/* Messages Section - Scrollable */}
+      <div className="flex-1 overflow-y-auto px-4">
+        <div className="max-w-3xl mx-auto py-6 space-y-4">
           {messages.map((message, index) => (
             <ChatMessage
               key={index}
-              message={message}
-              isLast={index === messages.length - 1}
+              content={message.content}
+              sender={message.sender}
             />
           ))}
-        </AnimatePresence>
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-2 p-4 text-muted-foreground"
-          >
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>AI is thinking...</span>
-          </motion.div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Sticky input section */}
-      <div className="sticky bottom-0 bg-background border-t">
-        <div className="space-y-4 pt-4">
-          {/* Image Generation section */}
-          <div className="px-4">
-            <ImageGeneration 
-              onImageGenerated={setSelectedImage}
-              onAddToChat={handleAddToChat}
-            />
-          </div>
-
-          {/* Vision Input section */}
-          <div className="px-4">
-            <VisionInput onImageSelect={handleImageSelect} />
-          </div>
-
-          {/* Text Input section */}
-          <div className="px-4 pb-4">
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 rounded-md bg-muted px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </form>
-          </div>
+          <div ref={messagesEndRef} />
         </div>
       </div>
-      <NameInputModal
-        isOpen={showNameModal}
-        onSubmit={handleNameSubmit}
-      />
+
+      {/* Feature Components */}
+      <div className="px-4">
+        {isAudioInputActive && (
+          <AudioInput 
+            onTranscript={(text) => setInputMessage(text)}
+            onClose={() => setIsAudioInputActive(false)}
+          />
+        )}
+        {showImageGen && (
+          <ImageGeneration
+            onImageGenerated={(image) => {
+              // Handle generated image
+              setShowImageGen(false);
+            }}
+          />
+        )}
+        {showVisionInput && (
+          <VisionInput
+            onImageSelect={(image) => {
+              // Handle selected image
+              setShowVisionInput(false);
+            }}
+          />
+        )}
+      </div>
+
+      {/* Input Section - Fixed */}
+      <div className="sticky bottom-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-4">
+        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+          <div className="flex gap-2 items-center">
+            {/* Feature Toggle Buttons */}
+            <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleFeatureToggle('audio-input')}
+                    className={isAudioInputActive ? 'text-primary' : ''}
+                  >
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Voice Input</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleFeatureToggle('audio-output')}
+                    className={isAudioOutputEnabled ? 'text-primary' : ''}
+                  >
+                    <VolumeIcon className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Text-to-Speech</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleFeatureToggle('image-gen')}
+                    className={showImageGen ? 'text-primary' : ''}
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Generate Images</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleFeatureToggle('vision-input')}
+                    className={showVisionInput ? 'text-primary' : ''}
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Upload Image</TooltipContent>
+              </Tooltip>
+            </div>
+
+            {/* Main Input */}
+            <div className="flex-1">
+              <Input
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder="Type your message..."
+                className="w-full"
+              />
+            </div>
+
+            {/* Send Button */}
+            <Button type="submit">
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </form>
+      </div>
+
+      {/* Audio Output Component */}
+      {isAudioOutputEnabled && (
+        <AudioOutput
+          text={messages[messages.length - 1]?.content}
+          onComplete={() => {/* Handle completion */}}
+        />
+      )}
     </div>
   );
 };

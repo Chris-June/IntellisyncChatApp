@@ -29,7 +29,7 @@ const NameInputModal = ({ isOpen, onSubmit }) => {
           >
             <h2 className="text-2xl font-bold mb-4">Welcome to Intellisync Chat! 👋</h2>
             <p className="text-muted-foreground mb-6">
-              To provide a more personalized experience, please tell us your name.
+              For a more personalized experience, please tell us your name.
             </p>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
