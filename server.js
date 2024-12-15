@@ -34,17 +34,26 @@ app.post('/api/chat', async (req, res) => {
 
     console.log('Received chat request with messages:', JSON.stringify(messages, null, 2));
     
-    const systemMessage = generateSystemMessage();
+    // Use the system message from the client request
+    const systemMessage = messages.find(msg => msg.role === 'system') || {
+      role: 'system',
+      content: 'You are a helpful assistant.'
+    };
     console.log('Using system message:', JSON.stringify(systemMessage, null, 2));
+
+    // Filter out the system message from messages to avoid duplication
+    const userMessages = messages.filter(msg => msg.role !== 'system');
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         systemMessage,
-        ...messages
+        ...userMessages
       ],
       temperature: 0.7,
       max_tokens: 500,
+      presence_penalty: 0.6,
+      stream: true,
     });
 
     console.log('Received response from OpenAI');

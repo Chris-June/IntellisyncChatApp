@@ -1,47 +1,32 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import NavHeader from './components/Navigation/NavHeader';
-import Landing from './pages/Landing';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
 import GeneralAssistant from './pages/GeneralAssistant';
-import CreativeWriter from './pages/CreativeWriter';
-import CodeExpert from './pages/CodeExpert';
-import ResearchAssistant from './pages/ResearchAssistant';
 import BusinessConsultant from './pages/BusinessConsultant';
-import LanguageTutor from './pages/LanguageTutor';
+import CodeExpert from './pages/CodeExpert';
+import CreativeWriter from './pages/CreativeWriter';
 import HealthCoach from './pages/HealthCoach';
-import TravelGuide from './pages/TravelGuide';
+import LanguageTutor from './pages/LanguageTutor';
 import MathScienceTutor from './pages/MathScienceTutor';
+import ResearchAssistant from './pages/ResearchAssistant';
+import TravelGuide from './pages/TravelGuide';
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen bg-background text-foreground">
         <Routes>
-          <Route
-            path="/"
-            element={<Landing />}
-          />
-          <Route
-            path="/*"
-            element={
-              <>
-                <NavHeader />
-                <main className="container mx-auto px-4 py-8">
-                  <Routes>
-                    <Route path="/general" element={<GeneralAssistant />} />
-                    <Route path="/creative" element={<CreativeWriter />} />
-                    <Route path="/coder" element={<CodeExpert />} />
-                    <Route path="/researcher" element={<ResearchAssistant />} />
-                    <Route path="/business" element={<BusinessConsultant />} />
-                    <Route path="/language" element={<LanguageTutor />} />
-                    <Route path="/health" element={<HealthCoach />} />
-                    <Route path="/travel" element={<TravelGuide />} />
-                    <Route path="/stem" element={<MathScienceTutor />} />
-                  </Routes>
-                </main>
-              </>
-            }
-          />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/general-assistant" element={<GeneralAssistant />} />
+          <Route path="/business-consultant" element={<BusinessConsultant />} />
+          <Route path="/code-expert" element={<CodeExpert />} />
+          <Route path="/creative-writer" element={<CreativeWriter />} />
+          <Route path="/health-coach" element={<HealthCoach />} />
+          <Route path="/language-tutor" element={<LanguageTutor />} />
+          <Route path="/math-science-tutor" element={<MathScienceTutor />} />
+          <Route path="/research-assistant" element={<ResearchAssistant />} />
+          <Route path="/travel-guide" element={<TravelGuide />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>

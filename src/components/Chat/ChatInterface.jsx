@@ -6,17 +6,29 @@ import ChatMessage from './ChatMessage';
 import VisionInput from './VisionInput';
 import ImageGeneration from './ImageGeneration';
 import AudioInput from './AudioInput';
+import NameInputModal from './NameInputModal';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const ChatInterface = () => {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hello! How can I help you today?' },
-  ]);
+const ChatInterface = ({ systemMessage }) => {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedAudio, setSelectedAudio] = useState(null);
+  
+  // Get the assistant name from the system message
+  const assistantName = systemMessage.content.match(/Your name is "([^"]+)"/)?.[1] || 'Assistant';
+  const storageKey = `userName_${assistantName}`;
+
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem(storageKey) || '';
+  });
+  
+  const [showNameModal, setShowNameModal] = useState(() => {
+    return !localStorage.getItem(storageKey);
+  });
+  
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -26,6 +38,37 @@ const ChatInterface = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    // If we have a stored name but no messages, show the initial greeting
+    if (userName && messages.length === 0) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: `Hi ${userName}! I'm ${assistantName}. How can I help you today?`
+        }
+      ]);
+    }
+  }, [userName, assistantName]);
+
+  const handleNameSubmit = (name) => {
+    setUserName(name);
+    localStorage.setItem(storageKey, name);
+    setShowNameModal(false);
+    setMessages([
+      {
+        role: 'assistant',
+        content: `Hi ${name}! I'm ${assistantName}. How can I help you today?`
+      }
+    ]);
+  };
+
+  const resetChat = () => {
+    setMessages([]);
+    localStorage.removeItem(storageKey);
+    setUserName('');
+    setShowNameModal(true);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,7 +86,12 @@ const ChatInterface = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: [
+            systemMessage,
+            { role: 'system', content: `The user's name is ${userName}. Please refer to them by name occasionally to maintain a personal connection.` },
+            ...messages,
+            userMessage
+          ],
         }),
       });
 
@@ -76,7 +124,17 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-screen bg-background">
+      <div className="flex justify-between items-center p-4 border-b">
+        <h1 className="text-xl font-bold">Chat Assistant</h1>
+        <Button
+          variant="outline"
+          onClick={resetChat}
+          className="text-sm"
+        >
+          New Chat
+        </Button>
+      </div>
       {/* Chat messages - scrollable area */}
       <div className="flex-1 overflow-y-auto mb-4">
         <AnimatePresence initial={false}>
@@ -138,6 +196,10 @@ const ChatInterface = () => {
           </div>
         </div>
       </div>
+      <NameInputModal
+        isOpen={showNameModal}
+        onSubmit={handleNameSubmit}
+      />
     </div>
   );
 };

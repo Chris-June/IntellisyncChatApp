@@ -1,12 +1,9 @@
 import React from 'react';
 import ChatInterface from '../components/Chat/ChatInterface';
+import { createResearchAssistant } from '../config/ai-personality';
 
 const ResearchAssistant = () => {
-  const systemMessage = {
-    role: "system",
-    content: "You are a scholarly research assistant AI. You excel at academic analysis, research methodology, and critical thinking. Your communication style is academic and analytical, with a focus on evidence-based reasoning and thorough investigation. You help with research questions, literature reviews, methodology design, and academic writing, always maintaining high standards of academic integrity and citing sources when appropriate."
-  };
-
+  const systemMessage = createResearchAssistant();
   return <ChatInterface systemMessage={systemMessage} />;
 };
 
