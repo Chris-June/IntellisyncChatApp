@@ -1,10 +1,8 @@
 import React from 'react';
 import ChatInterface from '../components/Chat/ChatInterface';
-import { createBusinessConsultant } from '../config/ai-personality';
 
 const BusinessConsultant = () => {
-  const systemMessage = createBusinessConsultant();
-  return <ChatInterface systemMessage={systemMessage} />;
+  return <ChatInterface aiPersona="business" />;
 };
 
 export default BusinessConsultant;

@@ -3,16 +3,44 @@ import cors from 'cors';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import { generateSystemMessage } from './src/config/ai-personality.js';
+import { formatAIResponse } from './src/utils/responseFormatter.js';
 import fetch from 'node-fetch';
 
 dotenv.config();
 
 const app = express();
+
+// Security headers middleware
+app.use((req, res, next) => {
+  // Content Security Policy
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: blob: https:; " +
+    "font-src 'self'; " +
+    "frame-ancestors 'none'; " +
+    "connect-src 'self' https://api.openai.com"
+  );
+
+  // X-Frame-Options
+  res.setHeader('X-Frame-Options', 'DENY');
+
+  // Other security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  next();
+});
+
 app.use(cors({
-  origin: 'http://localhost:5174', // Allow requests from Vite dev server
+  origin: 'http://localhost:5174',
   methods: ['GET', 'POST'],
   credentials: true
 }));
+
 app.use(express.json());
 
 const openai = new OpenAI({
@@ -25,54 +53,77 @@ if (!process.env.OPENAI_API_KEY) {
   process.exit(1);
 }
 
+// Chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
-    const { messages } = req.body;
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: 'Invalid messages format' });
-    }
-
-    console.log('Received chat request with messages:', JSON.stringify(messages, null, 2));
+    const { messages, persona = 'general', userName } = req.body;
     
-    // Use the system message from the client request
-    const systemMessage = messages.find(msg => msg.role === 'system') || {
+    // Get the appropriate system message based on persona
+    const systemMessage = generateSystemMessage(persona);
+    
+    // Add user context to system message
+    const userContextMessage = {
       role: 'system',
-      content: 'You are a helpful assistant.'
+      content: `The user's name is ${userName}. Please refer to them by name occasionally to maintain a personal connection.`
     };
-    console.log('Using system message:', JSON.stringify(systemMessage, null, 2));
 
-    // Filter out the system message from messages to avoid duplication
+    // Filter out any previous system messages
     const userMessages = messages.filter(msg => msg.role !== 'system');
 
-    const completion = await openai.chat.completions.create({
+    // Set response headers for streaming
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable proxy buffering
+    res.setHeader('Content-Security-Policy', "default-src 'self'; connect-src 'self' https://api.openai.com");
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.flushHeaders(); // Immediately send headers
+
+    const stream = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         systemMessage,
+        userContextMessage,
         ...userMessages
       ],
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 1000,
       presence_penalty: 0.6,
+      frequency_penalty: 0.6,
       stream: true,
     });
 
-    console.log('Received response from OpenAI');
+    let accumulatedContent = '';
 
-    if (!completion.choices || !completion.choices[0] || !completion.choices[0].message) {
-      throw new Error('Invalid response from OpenAI API');
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      accumulatedContent += content;
+      
+      // Format the accumulated content
+      const formattedContent = formatAIResponse(accumulatedContent);
+      
+      // Send the chunk to the client
+      res.write(`data: ${JSON.stringify({
+        role: 'assistant',
+        content: formattedContent,
+        name: systemMessage.name,
+        done: false
+      })}\n\n`);
     }
 
-    const response = {
-      role: completion.choices[0].message.role,
-      content: completion.choices[0].message.content,
-    };
+    // Send the final message
+    res.write(`data: ${JSON.stringify({
+      role: 'assistant',
+      content: formatAIResponse(accumulatedContent),
+      name: systemMessage.name,
+      done: true
+    })}\n\n`);
 
-    console.log('Sending response:', JSON.stringify(response, null, 2));
-    res.json(response);
+    res.end();
   } catch (error) {
-    console.error('Error in chat completion:', error);
-    const errorMessage = error.response?.data?.error?.message || error.message || 'An unexpected error occurred';
-    res.status(500).json({ error: errorMessage });
+    console.error('Error in chat endpoint:', error);
+    res.write(`data: ${JSON.stringify({ error: 'Failed to get chat response' })}\n\n`);
+    res.end();
   }
 });
 
