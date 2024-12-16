@@ -20,7 +20,7 @@ app.use((req, res, next) => {
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob: https: https://oaidalleapiprodscus.blob.core.windows.net; " +
     "font-src 'self'; " +
-    "connect-src 'self' https://api.openai.com ws: wss:;"
+    "connect-src 'self' http://localhost:* https://api.openai.com ws: wss:;"
   );
 
   // X-Frame-Options
