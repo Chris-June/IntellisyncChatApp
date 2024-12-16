@@ -200,14 +200,14 @@ const ChatInterface = ({ aiPersona }) => {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen pt-16">
       <NameInputModal 
         isOpen={showModal} 
         onSubmit={handleNameSubmit}
       />
       
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
         {messages.map((message, index) => (
           <ChatMessage
             key={index}
@@ -219,7 +219,7 @@ const ChatInterface = ({ aiPersona }) => {
       </div>
 
       {/* Input Area */}
-      <div className="border-t p-4">
+      <div className="border-t p-4 fixed bottom-0 left-0 right-0 bg-background">
         <form onSubmit={handleSubmit} className="flex space-x-2">
           <div className="flex-1">
             <Input

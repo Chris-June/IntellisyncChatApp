@@ -15,14 +15,20 @@ import CMOAssistant from './pages/CMOAssistant';
 import LegalAdvisorAssistant from './pages/LegalAdvisorAssistant';
 import OperationsManagerAssistant from './pages/OperationsManagerAssistant';
 
-const PageWithNav = ({ children }) => (
-  <>
-    <NavHeader />
-    <main className="min-h-screen">
-      {children}
-    </main>
-  </>
-);
+const PageWithNav = ({ children }) => {
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  return (
+    <>
+      <NavHeader />
+      <main className="min-h-screen pt-16">
+        {children}
+      </main>
+    </>
+  );
+};
 
 function App() {
   return (
