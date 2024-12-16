@@ -86,10 +86,10 @@ app.post('/api/chat', async (req, res) => {
         userContextMessage,
         ...userMessages
       ],
-      temperature: 0.7,
+      temperature: 0.8,
       max_tokens: 1000,
-      presence_penalty: 0.6,
-      frequency_penalty: 0.6,
+      presence_penalty: 0.8,
+      frequency_penalty: 0.5,
       stream: true,
     });
 
