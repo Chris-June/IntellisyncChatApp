@@ -4,30 +4,25 @@ import { Input } from "../ui/input";
 import { Tooltip } from "../ui/tooltip";
 import { TooltipContent } from "../ui/tooltip";
 import { TooltipTrigger } from "../ui/tooltip";
-import { 
-  Send, 
-  Image as ImageIcon, 
-  Mic, 
-  Camera, 
-  VolumeIcon,
-  Loader2
-} from "lucide-react";
+import { Send, Image as ImageIcon, Mic, Camera, VolumeIcon, Loader2 } from "lucide-react";
 import ChatMessage from './ChatMessage';
 import NameInputModal from './NameInputModal';
 import AudioInput from './AudioInput';
 import AudioOutput from './AudioOutput';
 import ImageGeneration from './ImageGeneration';
 import VisionInput from './VisionInput';
-import { 
+
+// Import updated assistant creators
+import {
   createGeneralAssistant,
-  createBusinessConsultant,
-  createCreativeWriter,
-  createCodeExpert,
-  createHealthCoach,
-  createLanguageTutor,
-  createMathScienceTutor,
-  createResearchAssistant,
-  createTravelGuide
+  createCEOAssistant,
+  createCFOAssistant,
+  createHRAssistant,
+  createEmployeeRelationsAssistant,
+  createSalesManagerAssistant,
+  createCMOAssistant,
+  createLegalAdvisorAssistant,
+  createOperationsManagerAssistant
 } from '../../config/ai-personality';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -48,14 +43,14 @@ const ChatInterface = ({ aiPersona }) => {
   const getPersonaConfig = (persona) => {
     const creators = {
       'general': createGeneralAssistant,
-      'business': createBusinessConsultant,
-      'creative': createCreativeWriter,
-      'code': createCodeExpert,
-      'health': createHealthCoach,
-      'language': createLanguageTutor,
-      'math-science': createMathScienceTutor,
-      'research': createResearchAssistant,
-      'travel': createTravelGuide
+      'ceo': createCEOAssistant,
+      'cfo': createCFOAssistant,
+      'hr': createHRAssistant,
+      'employee-relations': createEmployeeRelationsAssistant,
+      'sales': createSalesManagerAssistant,
+      'cmo': createCMOAssistant,
+      'legal': createLegalAdvisorAssistant,
+      'operations': createOperationsManagerAssistant
     };
 
     const creator = creators[persona] || createGeneralAssistant;
@@ -93,11 +88,9 @@ const ChatInterface = ({ aiPersona }) => {
 
     const userMessage = {
       role: 'user',
-      content: inputMessage.trim(),
-      name: userName
+      content: inputMessage.trim()
     };
 
-    // Add user message immediately
     setMessages(prevMessages => [...prevMessages, userMessage]);
     setInputMessage('');
     if (!showModal) {
@@ -124,17 +117,13 @@ const ChatInterface = ({ aiPersona }) => {
         throw new Error('Failed to get response');
       }
 
-      // Create a new message for the AI response
       const aiMessage = {
         role: 'assistant',
-        content: '',
-        name: getPersonaConfig(aiPersona).name
+        content: ''
       };
 
-      // Add the empty AI message to the state
       setMessages(prevMessages => [...prevMessages, aiMessage]);
 
-      // Set up SSE reader
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
@@ -149,8 +138,7 @@ const ChatInterface = ({ aiPersona }) => {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(5));
-              
-              // Update the last message with the new content
+
               setMessages(prevMessages => {
                 const newMessages = [...prevMessages];
                 newMessages[newMessages.length - 1] = {
@@ -183,196 +171,184 @@ const ChatInterface = ({ aiPersona }) => {
     }
   };
 
-  const handleFeatureToggle = (feature) => {
-    switch (feature) {
-      case 'audio-input':
-        setIsAudioInputActive(!isAudioInputActive);
-        setShowImageGen(false);
-        setShowVisionInput(false);
-        break;
-      case 'audio-output':
-        setIsAudioOutputEnabled(!isAudioOutputEnabled);
-        break;
-      case 'image-gen':
-        setShowImageGen(!showImageGen);
-        setIsAudioInputActive(false);
-        setShowVisionInput(false);
-        break;
-      case 'vision-input':
-        setShowVisionInput(!showVisionInput);
-        setIsAudioInputActive(false);
-        setShowImageGen(false);
-        break;
-    }
+  const handleNameSubmit = (name) => {
+    setUserName(name);
+    setShowModal(false);
+    setMessages([
+      {
+        role: 'assistant',
+        content: getInitialGreeting(name, aiPersona),
+        name: getPersonaConfig(aiPersona).name
+      }
+    ]);
+  };
+
+  const toggleAudioInput = () => {
+    setIsAudioInputActive(!isAudioInputActive);
+  };
+
+  const toggleAudioOutput = () => {
+    setIsAudioOutputEnabled(!isAudioOutputEnabled);
+  };
+
+  const toggleImageGen = () => {
+    setShowImageGen(!showImageGen);
+  };
+
+  const toggleVisionInput = () => {
+    setShowVisionInput(!showVisionInput);
   };
 
   return (
     <div className="flex flex-col h-screen">
-      <NameInputModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onSubmit={(name) => {
-          const persona = getPersonaConfig(aiPersona);
-          setUserName(name);
-          setShowModal(false);
-          setMessages([{
-            role: 'assistant',
-            content: `Hi ${name}! I'm ${persona.name}, ${persona.role}. How can I help you today?`
-          }]);
-        }}
+      <NameInputModal 
+        isOpen={showModal} 
+        onSubmit={handleNameSubmit}
       />
       
-      {/* Messages Section - Scrollable */}
-      <div className="flex-1 overflow-hidden pt-14">
-        <div className="h-full overflow-y-auto">
-          <div className="max-w-3xl mx-auto py-6 px-4 space-y-4 pb-32">
-            {messages.map((message, index) => (
-              <ChatMessage
-                key={index}
-                message={message}
-                isLast={index === messages.length - 1}
-              />
-            ))}
-            {isLoading && (
-              <div className="flex items-center gap-2 p-4 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>AI is thinking...</span>
-              </div>
-            )}
-            <div ref={messagesEndRef} className="h-4" />
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message, index) => (
+          <ChatMessage
+            key={index}
+            message={message}
+            isAudioEnabled={isAudioOutputEnabled}
+          />
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="border-t p-4">
+        <form onSubmit={handleSubmit} className="flex space-x-2">
+          <div className="flex-1">
+            <Input
+              ref={inputRef}
+              type="text"
+              placeholder="Type your message..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              disabled={showModal || isLoading}
+              className="w-full"
+            />
           </div>
-        </div>
-      </div>
 
-      {/* Feature Components */}
-      <div className="fixed bottom-[4.5rem] left-0 right-0 px-4 mb-4">
-        <div className="max-w-3xl mx-auto space-y-4">
-          {isAudioInputActive && (
-            <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 rounded-lg border shadow-lg">
-              <AudioInput 
-                onTranscript={(text) => setInputMessage(text)}
-                onClose={() => setIsAudioInputActive(false)}
-              />
-            </div>
-          )}
-          {showImageGen && (
-            <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 rounded-lg border shadow-lg">
-              <ImageGeneration
-                onImageGenerated={(image) => {
-                  setShowImageGen(false);
-                }}
-                onAddToChat={(newMessages) => {
-                  setMessages(prevMessages => [...prevMessages, ...newMessages]);
-                }}
-              />
-            </div>
-          )}
-          {showVisionInput && (
-            <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 rounded-lg border shadow-lg">
-              <VisionInput
-                onImageSelect={(image) => {
-                  setShowVisionInput(false);
-                }}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+          {/* Action Buttons */}
+          <div className="flex space-x-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={toggleVisionInput}
+                  disabled={showModal || isLoading}
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Upload Image</p>
+              </TooltipContent>
+            </Tooltip>
 
-      {/* Input Section - Fixed */}
-      <div className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-4">
-        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-          <div className="flex gap-2 items-center">
-            {/* Feature Toggle Buttons */}
-            <div className="flex gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleFeatureToggle('audio-input')}
-                    className={isAudioInputActive ? 'text-primary' : ''}
-                  >
-                    <Mic className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Voice Input</TooltipContent>
-              </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={toggleImageGen}
+                  disabled={showModal || isLoading}
+                >
+                  <ImageIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Generate Image</p>
+              </TooltipContent>
+            </Tooltip>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleFeatureToggle('audio-output')}
-                    className={isAudioOutputEnabled ? 'text-primary' : ''}
-                  >
-                    <VolumeIcon className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Text to Speech</TooltipContent>
-              </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={toggleAudioInput}
+                  disabled={showModal || isLoading}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Voice Input</p>
+              </TooltipContent>
+            </Tooltip>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleFeatureToggle('image-gen')}
-                    className={showImageGen ? 'text-primary' : ''}
-                  >
-                    <ImageIcon className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Generate Image</TooltipContent>
-              </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={isAudioOutputEnabled ? "default" : "outline"}
+                  onClick={toggleAudioOutput}
+                  disabled={showModal || isLoading}
+                >
+                  <VolumeIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Toggle Voice Output</p>
+              </TooltipContent>
+            </Tooltip>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleFeatureToggle('vision-input')}
-                    className={showVisionInput ? 'text-primary' : ''}
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Vision Input</TooltipContent>
-              </Tooltip>
-            </div>
-
-            {/* Main Input */}
-            <div className="flex-1">
-              <Input
-                ref={inputRef}
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="Type your message..."
-                className="w-full"
-                disabled={isLoading || showModal}
-              />
-            </div>
-
-            {/* Send Button */}
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  type="submit"
+                  size="icon"
+                  disabled={!inputMessage.trim() || showModal || isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Send Message</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </form>
-      </div>
 
-      {/* Audio Output Component */}
-      {isAudioOutputEnabled && (
-        <AudioOutput
-          text={messages[messages.length - 1]?.content}
-          onComplete={() => {/* Handle completion */}}
-        />
-      )}
+        {isAudioInputActive && (
+          <AudioInput
+            onTranscription={setInputMessage}
+            onClose={toggleAudioInput}
+          />
+        )}
+
+        {showImageGen && (
+          <ImageGeneration
+            onClose={toggleImageGen}
+            onImageGenerated={(url) => {
+              setInputMessage(prev => prev + ` ${url}`);
+            }}
+          />
+        )}
+
+        {showVisionInput && (
+          <VisionInput
+            onClose={toggleVisionInput}
+            onImageUploaded={(url) => {
+              setInputMessage(prev => prev + ` ${url}`);
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };

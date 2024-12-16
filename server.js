@@ -20,12 +20,11 @@ app.use((req, res, next) => {
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob: https: https://oaidalleapiprodscus.blob.core.windows.net; " +
     "font-src 'self'; " +
-    "frame-ancestors 'none'; " +
-    "connect-src 'self' https://api.openai.com"
+    "connect-src 'self' https://api.openai.com ws: wss:;"
   );
 
   // X-Frame-Options
-  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
 
   // Other security headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -36,9 +35,10 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: 'http://localhost:5174',
+  origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5174' : 'http://localhost:5174',
   methods: ['GET', 'POST'],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -67,63 +67,63 @@ app.post('/api/chat', async (req, res) => {
       content: `The user's name is ${userName}. Please refer to them by name occasionally to maintain a personal connection.`
     };
 
-    // Filter out any previous system messages
-    const userMessages = messages.filter(msg => msg.role !== 'system');
+    // Filter out any previous system messages and clean message format
+    const userMessages = messages
+      .filter(msg => msg.role !== 'system')
+      .map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
 
-    // Set response headers for streaming
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no'); // Disable proxy buffering
-    res.setHeader('Content-Security-Policy', "default-src 'self'; connect-src 'self' https://api.openai.com");
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.flushHeaders(); // Immediately send headers
+    try {
+      // Set response headers for streaming
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no'
+      });
 
-    const stream = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        systemMessage,
-        userContextMessage,
-        ...userMessages
-      ],
-      temperature: 0.8,
-      max_tokens: 1000,
-      presence_penalty: 0.8,
-      frequency_penalty: 0.5,
-      stream: true,
-    });
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          systemMessage,
+          userContextMessage,
+          ...userMessages
+        ],
+        temperature: 0.8,
+        max_tokens: 1000,
+        presence_penalty: 0.8,
+        frequency_penalty: 0.5,
+        stream: true,
+      });
 
-    let accumulatedContent = '';
+      let accumulatedContent = '';
 
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      accumulatedContent += content;
-      
-      // Format the accumulated content
-      const formattedContent = formatAIResponse(accumulatedContent);
-      
-      // Send the chunk to the client
-      res.write(`data: ${JSON.stringify({
-        role: 'assistant',
-        content: formattedContent,
-        name: systemMessage.name,
-        done: false
-      })}\n\n`);
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          accumulatedContent += content;
+          res.write(`data: ${JSON.stringify({ content: accumulatedContent })}\n\n`);
+        }
+      }
+
+      res.write(`data: ${JSON.stringify({ content: accumulatedContent, done: true })}\n\n`);
+      res.end();
+    } catch (error) {
+      console.error('Chat error:', error);
+      // Only send error response if headers haven't been sent
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'An error occurred during the chat.' });
+      } else {
+        // If headers were already sent, just end the stream with an error message
+        res.write(`data: ${JSON.stringify({ error: 'An error occurred during the chat.', done: true })}\n\n`);
+        res.end();
+      }
     }
-
-    // Send the final message
-    res.write(`data: ${JSON.stringify({
-      role: 'assistant',
-      content: formatAIResponse(accumulatedContent),
-      name: systemMessage.name,
-      done: true
-    })}\n\n`);
-
-    res.end();
   } catch (error) {
-    console.error('Error in chat endpoint:', error);
-    res.write(`data: ${JSON.stringify({ error: 'Failed to get chat response' })}\n\n`);
-    res.end();
+    console.error('Chat error:', error);
+    res.status(500).json({ error: 'An error occurred during the chat.' });
   }
 });
 

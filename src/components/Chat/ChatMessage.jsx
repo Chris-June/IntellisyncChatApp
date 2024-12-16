@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '../../lib/utils';
-import { Bot, User } from 'lucide-react';
+import { Bot, User, Volume2, VolumeX } from 'lucide-react';
+import AudioOutput from './AudioOutput';
 
-const ChatMessage = ({ message, isLast }) => {
+const ChatMessage = ({ message, isAudioEnabled }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
   const isUser = message.role === 'user';
 
   return (
@@ -20,24 +22,31 @@ const ChatMessage = ({ message, isLast }) => {
         )}
       </div>
       <div className="flex-1 space-y-2">
-        {message.content && (
-          <div 
-            className="prose prose-sm dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: message.content }}
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">
+            {isUser ? message.name : message.name}
+          </span>
+          {!isUser && isAudioEnabled && (
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="p-1 hover:bg-muted rounded-full"
+            >
+              {isPlaying ? (
+                <VolumeX className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+          )}
+        </div>
+        <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+          {message.content}
+        </div>
+        {!isUser && isAudioEnabled && isPlaying && (
+          <AudioOutput
+            text={message.content}
+            onComplete={() => setIsPlaying(false)}
           />
-        )}
-        {message.image && (
-          <div className="mt-2">
-            <img 
-              src={message.image} 
-              alt="Generated" 
-              className="rounded-lg max-w-full h-auto"
-              onError={(e) => {
-                console.error('Image failed to load:', message.image);
-                e.target.style.display = 'none';
-              }}
-            />
-          </div>
         )}
       </div>
     </div>

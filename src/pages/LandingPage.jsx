@@ -3,96 +3,93 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Brain,
-  Code,
   Briefcase,
-  PenTool,
-  Heart,
-  Languages,
-  Calculator,
-  BookOpen,
-  Plane,
-  ArrowRight,
-  Github,
-  Twitter,
-  Mail
+  DollarSign,
+  Users,
+  Building,
+  TrendingUp,
+  Megaphone,
+  FileText,
+  Settings,
+  ArrowRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Footer from '../components/Layout/Footer';
-
 const assistants = [
   {
-    name: 'Chris',
+    name: 'Intellisync Solutions',
     role: 'General Assistant',
-    description: 'Your versatile AI companion for any task',
-    icon: Brain,
+    description: 'Your versatile AI companion for business support',
+    icon: Brain, // General-purpose assistant
     path: '/general-assistant',
     color: 'bg-blue-500'
   },
   {
-    name: 'Dev',
-    role: 'Code Expert',
-    description: 'Technical guidance and programming solutions',
-    icon: Code,
-    path: '/code-expert',
+    name: 'CEO Assistant',
+    role: 'Strategic Advisor',
+    description: 'Guidance for vision setting and leadership',
+    icon: Briefcase, // Leadership and executive strategy
+    path: '/ceo-assistant',
     color: 'bg-purple-500'
   },
   {
-    name: 'Alex',
-    role: 'Business Consultant',
-    description: 'Strategic business insights and planning',
-    icon: Briefcase,
-    path: '/business-consultant',
+    name: 'CFO Assistant',
+    role: 'Financial Expert',
+    description: 'Insights into budgeting, forecasting, and financial planning',
+    icon: DollarSign, // Finance and budgeting
+    path: '/cfo-assistant',
     color: 'bg-green-500'
   },
   {
-    name: 'Maya',
-    role: 'Creative Writer',
-    description: 'Unleash your creative writing potential',
-    icon: PenTool,
-    path: '/creative-writer',
+    name: 'HR Assistant',
+    role: 'HR Specialist',
+    description: 'Support for employee management and organizational culture',
+    icon: Users, // Employee management and HR
+    path: '/hr-assistant',
     color: 'bg-pink-500'
   },
   {
-    name: 'Sage',
-    role: 'Health Coach',
-    description: 'Guidance for your wellness journey',
-    icon: Heart,
-    path: '/health-coach',
+    name: 'Employee Relations Assistant',
+    role: 'Conflict Resolver',
+    description: 'Promoting workplace harmony and employee engagement',
+    icon: Building, // Office/building icon for employee relations
+    path: '/employee-relations-assistant',
     color: 'bg-red-500'
   },
   {
-    name: 'Lingo',
-    role: 'Language Tutor',
-    description: 'Master new languages effectively',
-    icon: Languages,
-    path: '/language-tutor',
+    name: 'Sales Manager Assistant',
+    role: 'Sales Strategist',
+    description: 'Data-backed strategies to drive revenue growth',
+    icon: TrendingUp, // Sales growth and revenue trends
+    path: '/sales-manager-assistant',
     color: 'bg-yellow-500'
   },
   {
-    name: 'Newton',
-    role: 'Math & Science Tutor',
-    description: 'Clear explanations for STEM topics',
-    icon: Calculator,
-    path: '/math-science-tutor',
+    name: 'CMO Assistant',
+    role: 'Marketing Expert',
+    description: 'Creative solutions for marketing and brand strategy',
+    icon: Megaphone, // Marketing and outreach
+    path: '/cmo-assistant',
     color: 'bg-indigo-500'
   },
   {
-    name: 'Scholar',
-    role: 'Research Assistant',
-    description: 'Academic research and analysis support',
-    icon: BookOpen,
-    path: '/research-assistant',
+    name: 'Legal Advisor Assistant',
+    role: 'Legal Expert',
+    description: 'Compliance, contracts, and risk management guidance',
+    icon: FileText, // Legal documents and compliance
+    path: '/legal-advisor-assistant',
     color: 'bg-orange-500'
   },
   {
-    name: 'Marco',
-    role: 'Travel Guide',
-    description: 'Expert travel planning and recommendations',
-    icon: Plane,
-    path: '/travel-guide',
+    name: 'Operations Manager Assistant',
+    role: 'Operational Optimizer',
+    description: 'Process improvements and operational planning support',
+    icon: Settings, // Settings icon for operations and efficiency
+    path: '/operations-manager-assistant',
     color: 'bg-teal-500'
   }
 ];
+
 
 const LandingPage = () => {
   return (

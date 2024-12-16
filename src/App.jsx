@@ -3,15 +3,17 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { TooltipProvider } from './components/ui/tooltip';
 import NavHeader from './components/Navigation/NavHeader';
 import LandingPage from './pages/LandingPage';
+
+// Import SME Business Assistant pages
 import GeneralAssistant from './pages/GeneralAssistant';
-import BusinessConsultant from './pages/BusinessConsultant';
-import CodeExpert from './pages/CodeExpert';
-import CreativeWriter from './pages/CreativeWriter';
-import HealthCoach from './pages/HealthCoach';
-import LanguageTutor from './pages/LanguageTutor';
-import MathScienceTutor from './pages/MathScienceTutor';
-import ResearchAssistant from './pages/ResearchAssistant';
-import TravelGuide from './pages/TravelGuide';
+import CEOAssistant from './pages/CEOAssistant';
+import CFOAssistant from './pages/CFOAssistant';
+import HRAssistant from './pages/HRAssistant';
+import EmployeeRelationsAssistant from './pages/EmployeeRelationsAssistant';
+import SalesManagerAssistant from './pages/SalesManagerAssistant';
+import CMOAssistant from './pages/CMOAssistant';
+import LegalAdvisorAssistant from './pages/LegalAdvisorAssistant';
+import OperationsManagerAssistant from './pages/OperationsManagerAssistant';
 
 const PageWithNav = ({ children }) => (
   <>
@@ -30,14 +32,14 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/general-assistant" element={<PageWithNav><GeneralAssistant /></PageWithNav>} />
-            <Route path="/business-consultant" element={<PageWithNav><BusinessConsultant /></PageWithNav>} />
-            <Route path="/code-expert" element={<PageWithNav><CodeExpert /></PageWithNav>} />
-            <Route path="/creative-writer" element={<PageWithNav><CreativeWriter /></PageWithNav>} />
-            <Route path="/health-coach" element={<PageWithNav><HealthCoach /></PageWithNav>} />
-            <Route path="/language-tutor" element={<PageWithNav><LanguageTutor /></PageWithNav>} />
-            <Route path="/math-science-tutor" element={<PageWithNav><MathScienceTutor /></PageWithNav>} />
-            <Route path="/research-assistant" element={<PageWithNav><ResearchAssistant /></PageWithNav>} />
-            <Route path="/travel-guide" element={<PageWithNav><TravelGuide /></PageWithNav>} />
+            <Route path="/ceo-assistant" element={<PageWithNav><CEOAssistant /></PageWithNav>} />
+            <Route path="/cfo-assistant" element={<PageWithNav><CFOAssistant /></PageWithNav>} />
+            <Route path="/hr-assistant" element={<PageWithNav><HRAssistant /></PageWithNav>} />
+            <Route path="/employee-relations-assistant" element={<PageWithNav><EmployeeRelationsAssistant /></PageWithNav>} />
+            <Route path="/sales-manager-assistant" element={<PageWithNav><SalesManagerAssistant /></PageWithNav>} />
+            <Route path="/cmo-assistant" element={<PageWithNav><CMOAssistant /></PageWithNav>} />
+            <Route path="/legal-advisor-assistant" element={<PageWithNav><LegalAdvisorAssistant /></PageWithNav>} />
+            <Route path="/operations-manager-assistant" element={<PageWithNav><OperationsManagerAssistant /></PageWithNav>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
