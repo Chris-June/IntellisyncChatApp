@@ -56,7 +56,9 @@ if (!process.env.OPENAI_API_KEY) {
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
-    const { messages, persona = 'general', userName } = req.body;
+    const { messages, persona = 'english', userInfo } = req.body;
+    
+    console.log('Received request with persona:', persona); // Debug log
     
     // Get the appropriate system message based on persona
     const systemMessage = generateSystemMessage(persona);
@@ -64,7 +66,7 @@ app.post('/api/chat', async (req, res) => {
     // Add user context to system message
     const userContextMessage = {
       role: 'system',
-      content: `The user's name is ${userName}. Please refer to them by name occasionally to maintain a personal connection.`
+      content: `The user's name is ${userInfo.name}. They are ${userInfo.age} years old and in ${userInfo.grade}. Please adjust your teaching style and explanations to be appropriate for their grade level, ensuring the content is engaging and understandable for their age group. Refer to them by name occasionally to maintain a personal connection.`
     };
 
     // Filter out any previous system messages and clean message format
@@ -75,65 +77,82 @@ app.post('/api/chat', async (req, res) => {
         content: msg.content
       }));
 
-    try {
-      // Set response headers for streaming
-      res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'X-Accel-Buffering': 'no'
-      });
+    // Set response headers for streaming
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no'
+    });
 
-      const stream = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          systemMessage,
-          userContextMessage,
-          ...userMessages
-        ],
-        temperature: 0.8,
-        max_tokens: 1000,
-        presence_penalty: 0.8,
-        frequency_penalty: 0.5,
-        stream: true,
-      });
+    const stream = await openai.chat.completions.create({
+      model: "gpt-4-1106-preview",
+      messages: [
+        systemMessage,
+        {
+          role: 'system',
+          content: persona === 'french-language' ? 
+            `You are a French language tutor. Always respond in a way that helps students learn French. If the student writes in English, respond with both French and English translations to help them learn. If they write in French, gently correct any mistakes and provide the correct form.` :
+            persona === 'english' ?
+            `You are an English language and literature tutor. Focus on grammar, vocabulary, writing skills, and literary analysis. Help students improve their writing by providing constructive feedback. When analyzing literature, guide them through themes, characters, and literary devices. Correct grammar mistakes gently and explain the rules.` :
+            persona === 'math' ?
+            `You are a Mathematics tutor. Break down complex problems into simple steps. Always show your work and explain each step clearly. Use real-world examples to illustrate concepts. If a student makes a mistake, help them understand why it's wrong and guide them to the correct solution. Encourage different problem-solving approaches.` :
+            persona === 'science' ?
+            `You are a Science tutor. Explain scientific concepts using clear, age-appropriate language. Connect theories to real-world applications. When discussing experiments, emphasize scientific method and safety. Use analogies to explain complex concepts. Encourage critical thinking and hypothesis formation.` :
+            persona === 'history' ?
+            `You are a History tutor. Present historical events in an engaging narrative style. Help students understand cause and effect relationships in history. Connect historical events to present-day situations when relevant. Encourage critical analysis of historical sources and different perspectives.` :
+            persona === 'geography' ?
+            `You are a Geography tutor. Help students understand both physical and human geography. Use maps and real-world examples to explain geographical concepts. Connect geographical features to human activities and climate patterns. Discuss environmental issues and their geographical impact.` :
+            persona === 'social-studies' ?
+            `You are a Social Studies tutor. Help students understand civics, economics, and social systems. Use current events as teaching opportunities. Encourage critical thinking about social issues. Help students understand different cultures and perspectives.` :
+            persona === 'guidance-counselor' ?
+            `You are a Guidance Counselor. Provide supportive, empathetic guidance for academic and personal development. Help students with study skills, time management, and educational planning. Offer stress management techniques and positive coping strategies. Always maintain an encouraging and supportive tone.` :
+            persona === 'health-wellness' ?
+            `You are a Health & Wellness educator. Focus on physical and mental health topics. Promote healthy lifestyle choices through age-appropriate explanations. Discuss nutrition, exercise, mental health, and personal well-being. Always maintain a supportive and non-judgmental tone.` :
+            `You are an Educational Assistant. Provide clear, engaging, and age-appropriate guidance in your subject area.`
+        },
+        userContextMessage,
+        ...userMessages
+      ],
+      temperature: 0.7,
+      max_tokens: 1000,
+      presence_penalty: 0.6,
+      frequency_penalty: 0.5,
+      stream: true,
+    });
 
-      let accumulatedContent = '';
+    let accumulatedContent = '';
 
-      for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || '';
-        accumulatedContent += content;
-        
-        // Format the accumulated content
-        const formattedContent = formatAIResponse(accumulatedContent);
-        
-        // Send the formatted content
-        res.write(`data: ${JSON.stringify({
-          content: formattedContent,
-          done: false
-        })}\n\n`);
-      }
-
-      // Send the final message
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      accumulatedContent += content;
+      
+      // Format the accumulated content
+      const formattedContent = formatAIResponse(accumulatedContent);
+      
+      // Send the formatted content
       res.write(`data: ${JSON.stringify({
-        content: formatAIResponse(accumulatedContent),
-        done: true
+        content: formattedContent,
+        done: false
       })}\n\n`);
-      res.end();
-    } catch (error) {
-      console.error('Chat error:', error);
-      // Only send error response if headers haven't been sent
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'An error occurred during the chat.' });
-      } else {
-        // If headers were already sent, just end the stream with an error message
-        res.write(`data: ${JSON.stringify({ error: 'An error occurred during the chat.', done: true })}\n\n`);
-        res.end();
-      }
     }
+
+    // Send the final message
+    res.write(`data: ${JSON.stringify({
+      content: formatAIResponse(accumulatedContent),
+      done: true
+    })}\n\n`);
+    res.end();
   } catch (error) {
     console.error('Chat error:', error);
-    res.status(500).json({ error: 'An error occurred during the chat.' });
+    // Only send error response if headers haven't been sent
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'An error occurred during the chat.' });
+    } else {
+      // If headers were already sent, just end the stream with an error message
+      res.write(`data: ${JSON.stringify({ error: 'An error occurred during the chat.', done: true })}\n\n`);
+      res.end();
+    }
   }
 });
 

@@ -14,15 +14,16 @@ import VisionInput from './VisionInput';
 
 // Import updated assistant creators
 import {
-  createGeneralAssistant,
-  createCEOAssistant,
-  createCFOAssistant,
-  createHRAssistant,
-  createEmployeeRelationsAssistant,
-  createSalesManagerAssistant,
-  createCMOAssistant,
-  createLegalAdvisorAssistant,
-  createOperationsManagerAssistant
+  createEnglishAssistant,
+  createFrenchAssistant,
+  createGeographyAssistant,
+  createGuidanceCounselorAssistant,
+  createHealthWellnessAssistant,
+  createHistoryAssistant,
+  createMathAssistant,
+  createScienceAssistant,
+  createSocialStudiesAssistant,
+  generateSystemMessage
 } from '../../config/ai-personality';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -31,7 +32,7 @@ const ChatInterface = ({ aiPersona }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [showModal, setShowModal] = useState(true);
-  const [userName, setUserName] = useState('');
+  const [userInfo, setUserInfo] = useState({ name: '', age: null, grade: '' });
   const [isAudioInputActive, setIsAudioInputActive] = useState(false);
   const [isAudioOutputEnabled, setIsAudioOutputEnabled] = useState(false);
   const [showImageGen, setShowImageGen] = useState(false);
@@ -39,40 +40,6 @@ const ChatInterface = ({ aiPersona }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-
-  const getPersonaConfig = (persona) => {
-    const creators = {
-      'general': createGeneralAssistant,
-      'ceo': createCEOAssistant,
-      'cfo': createCFOAssistant,
-      'hr': createHRAssistant,
-      'employee-relations': createEmployeeRelationsAssistant,
-      'sales': createSalesManagerAssistant,
-      'cmo': createCMOAssistant,
-      'legal': createLegalAdvisorAssistant,
-      'operations': createOperationsManagerAssistant
-    };
-
-    const creator = creators[persona] || createGeneralAssistant;
-    const config = creator();
-    // Extract name and role from the content string
-    const nameMatch = config.content.match(/Your name is "([^"]+)"/);
-    const roleMatch = config.content.match(/You are ([^\.]+)/);
-    
-    return {
-      name: nameMatch ? nameMatch[1] : 'Assistant',
-      role: roleMatch ? roleMatch[1].trim() : 'an AI assistant'
-    };
-  };
-
-  const getInitialGreeting = (name, persona) => {
-    const personaConfig = getPersonaConfig(persona);
-    return `Hi ${name}! I'm ${personaConfig.name}, ${personaConfig.role}. How can I help you today?`;
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   useEffect(() => {
     console.log('Current aiPersona:', aiPersona);
@@ -82,23 +49,38 @@ const ChatInterface = ({ aiPersona }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!inputMessage.trim() || isLoading) return;
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    const userMessage = {
-      role: 'user',
-      content: inputMessage.trim()
+  const handleUserInfo = (info) => {
+    setUserInfo(info);
+    setShowModal(false);
+    
+    console.log('Handling user info with aiPersona:', aiPersona);
+    const systemMessage = generateSystemMessage(aiPersona);
+    console.log('Generated system message:', systemMessage);
+    
+    // Extract assistant name from the system message
+    const nameMatch = systemMessage.content.match(/Your name is "([^"]+)"/);
+    const assistantName = nameMatch ? nameMatch[1] : "Educational Assistant";
+    console.log('Selected assistant name:', assistantName);
+
+    const welcomeMessage = {
+      role: 'assistant',
+      content: `Hello ${info.name}! I'll be your ${assistantName}. I'll adjust my teaching style and explanations to be appropriate for a ${info.grade} student. How can I help you today?`
     };
+    setMessages([welcomeMessage]);
+  };
 
-    setMessages(prevMessages => [...prevMessages, userMessage]);
-    setInputMessage('');
-    if (!showModal) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
-    }
+  const sendMessage = async (messageContent) => {
+    if (!messageContent.trim()) return;
+
     setIsLoading(true);
+    const newMessage = { role: 'user', content: messageContent };
+    console.log('Sending message with persona:', aiPersona);
+    setMessages(prev => [...prev, newMessage]);
+    setInputMessage('');
 
     try {
       const response = await fetch(`${API_URL}/api/chat`, {
@@ -107,23 +89,17 @@ const ChatInterface = ({ aiPersona }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: messages.concat(userMessage),
+          messages: [...messages, newMessage],
           persona: aiPersona,
-          userName: userName
+          userInfo: userInfo
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
-
-      const aiMessage = {
-        role: 'assistant',
-        content: ''
-      };
-
-      setMessages(prevMessages => [...prevMessages, aiMessage]);
-
+      if (!response.ok) throw new Error('Network response was not ok');
+      
+      // Add an empty assistant message that we'll update as we receive chunks
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
@@ -138,49 +114,38 @@ const ChatInterface = ({ aiPersona }) => {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(5));
-
+              
               setMessages(prevMessages => {
                 const newMessages = [...prevMessages];
-                newMessages[newMessages.length - 1] = {
-                  ...newMessages[newMessages.length - 1],
-                  content: data.content
-                };
+                const lastMessage = newMessages[newMessages.length - 1];
+                if (lastMessage.role === 'assistant') {
+                  lastMessage.content = data.content;
+                }
                 return newMessages;
               });
-
-              if (data.done) {
-                setIsLoading(false);
-              }
-            } catch (e) {
-              console.error('Error parsing SSE data:', e);
+            } catch (error) {
+              console.error('Error parsing SSE data:', error);
             }
           }
         }
       }
     } catch (error) {
       console.error('Error:', error);
-      setMessages(prevMessages => [
-        ...prevMessages,
-        {
-          role: 'assistant',
-          content: 'I apologize, but I encountered an error. Please try again.',
-          name: 'System'
-        },
-      ]);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'I apologize, but I encountered an error. Please try again.' }]);
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const handleNameSubmit = (name) => {
-    setUserName(name);
-    setShowModal(false);
-    setMessages([
-      {
-        role: 'assistant',
-        content: getInitialGreeting(name, aiPersona),
-        name: getPersonaConfig(aiPersona).name
-      }
-    ]);
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(inputMessage);
+    }
+  };
+
+  const handleSendClick = () => {
+    sendMessage(inputMessage);
   };
 
   const toggleAudioInput = () => {
@@ -200,154 +165,142 @@ const ChatInterface = ({ aiPersona }) => {
   };
 
   return (
-    <div className="flex flex-col h-screen pt-16">
+    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-5xl mx-auto">
       <NameInputModal 
         isOpen={showModal} 
-        onSubmit={handleNameSubmit}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleUserInfo}
       />
       
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
-          <ChatMessage
-            key={index}
-            message={message}
+          <ChatMessage 
+            key={index} 
+            message={message} 
             isAudioEnabled={isAudioOutputEnabled}
           />
         ))}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="border-t p-4 fixed bottom-0 left-0 right-0 bg-background">
-        <form onSubmit={handleSubmit} className="flex space-x-2">
-          <div className="flex-1">
-            <Input
-              ref={inputRef}
-              type="text"
-              placeholder="Type your message..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              disabled={showModal || isLoading}
-              className="w-full"
-            />
-          </div>
+      {isAudioInputActive && (
+        <AudioInput 
+          onTranscription={(text) => setInputMessage(text)}
+          onClose={toggleAudioInput}
+        />
+      )}
 
-          {/* Action Buttons */}
-          <div className="flex space-x-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="outline"
-                  onClick={toggleVisionInput}
-                  disabled={showModal || isLoading}
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Upload Image</p>
-              </TooltipContent>
-            </Tooltip>
+      {showImageGen && (
+        <ImageGeneration
+          onClose={toggleImageGen}
+          onImageGenerated={(url) => {
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: `Here's the generated image: ![Generated Image](${url})`,
+            }]);
+          }}
+        />
+      )}
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="outline"
-                  onClick={toggleImageGen}
-                  disabled={showModal || isLoading}
-                >
-                  <ImageIcon className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Generate Image</p>
-              </TooltipContent>
-            </Tooltip>
+      {showVisionInput && (
+        <VisionInput
+          onClose={toggleVisionInput}
+          onVisionResponse={(response) => {
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: response,
+            }]);
+          }}
+        />
+      )}
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="outline"
-                  onClick={toggleAudioInput}
-                  disabled={showModal || isLoading}
-                >
-                  <Mic className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Voice Input</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant={isAudioOutputEnabled ? "default" : "outline"}
-                  onClick={toggleAudioOutput}
-                  disabled={showModal || isLoading}
-                >
-                  <VolumeIcon className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Toggle Voice Output</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  type="submit"
-                  size="icon"
-                  disabled={!inputMessage.trim() || showModal || isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Send Message</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </form>
-
-        {isAudioInputActive && (
-          <AudioInput
-            onTranscription={setInputMessage}
-            onClose={toggleAudioInput}
+      <div className="p-4 border-t">
+        <div className="flex gap-2">
+          <Input
+            ref={inputRef}
+            placeholder="Type your message..."
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isLoading}
+            className="flex-1"
           />
-        )}
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={toggleAudioInput}
+                disabled={isLoading}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Voice input</p>
+            </TooltipContent>
+          </Tooltip>
 
-        {showImageGen && (
-          <ImageGeneration
-            onClose={toggleImageGen}
-            onImageGenerated={(url) => {
-              setInputMessage(prev => prev + ` ${url}`);
-            }}
-          />
-        )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={toggleAudioOutput}
+                disabled={isLoading}
+              >
+                <VolumeIcon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Toggle text-to-speech</p>
+            </TooltipContent>
+          </Tooltip>
 
-        {showVisionInput && (
-          <VisionInput
-            onClose={toggleVisionInput}
-            onImageUploaded={(url) => {
-              setInputMessage(prev => prev + ` ${url}`);
-            }}
-          />
-        )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={toggleImageGen}
+                disabled={isLoading}
+              >
+                <ImageIcon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Generate image</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={toggleVisionInput}
+                disabled={isLoading}
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Vision input</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Button 
+            onClick={handleSendClick}
+            disabled={isLoading || !inputMessage.trim()}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

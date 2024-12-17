@@ -1,12 +1,12 @@
 import React from 'react';
 import ChatInterface from '../components/Chat/ChatInterface';
 
-const CFOAssistant = () => {
+const HistoryAssistant = () => {
   return (
     <div className="container mx-auto px-4 py-8">
-      <ChatInterface aiPersona="cfo" />
+      <ChatInterface aiPersona="history" />
     </div>
   );
 };
 
-export default CFOAssistant;
+export default HistoryAssistant;

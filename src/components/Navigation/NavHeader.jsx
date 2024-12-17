@@ -2,29 +2,30 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import {
-  Building2,
-  Calculator,
-  Users,
-  UserCheck,
-  TrendingUp,
-  BarChart2,
-  Scale,
-  Settings,
   Home,
-  Brain
+  GraduationCap,
+  BookOpen,
+  Languages,
+  Globe,
+  Heart,
+  BookText,
+  Calculator,
+  Microscope,
+  Users
 } from 'lucide-react';
 
+// Change the names to match your new routes.
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'General Assistant', href: '/general-assistant', icon: Brain },
-  { name: 'CEO Assistant', href: '/ceo-assistant', icon: Building2 },
-  { name: 'CFO Assistant', href: '/cfo-assistant', icon: Calculator },
-  { name: 'HR Assistant', href: '/hr-assistant', icon: Users },
-  { name: 'Employee Relations', href: '/employee-relations-assistant', icon: UserCheck },
-  { name: 'Sales Manager', href: '/sales-manager-assistant', icon: TrendingUp },
-  { name: 'CMO Assistant', href: '/cmo-assistant', icon: BarChart2 },
-  { name: 'Legal Advisor', href: '/legal-advisor-assistant', icon: Scale },
-  { name: 'Operations Manager', href: '/operations-manager-assistant', icon: Settings },
+  { name: 'Guidance Counselor', href: '/guidance-counselor', icon: GraduationCap },
+  { name: 'English', href: '/english', icon: BookOpen },
+  { name: 'French Language', href: '/french-language', icon: Languages },
+  { name: 'Geography', href: '/geography', icon: Globe },
+  { name: 'Health & Wellness', href: '/health-wellness', icon: Heart },
+  { name: 'History', href: '/history', icon: BookText },
+  { name: 'Math', href: '/math', icon: Calculator },
+  { name: 'Science', href: '/science', icon: Microscope },
+  { name: 'Social Studies', href: '/social-studies', icon: Users },
 ];
 
 const NavHeader = () => {

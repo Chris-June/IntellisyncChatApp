@@ -1,0 +1,90 @@
+
+
+# TODO: Steps to Modify the App for Other Niche Groups
+
+1. **Modify ai-personality.js**  
+   - Add or update AI personas for your new niche assistants.  
+   - Ensure the assistant names, roles, expertise, capabilities, communication styles, and behavior align with the new niche.  
+   - Use the `createPersonaTemplate` to create consistent assistant configurations.
+
+Example:
+```javascript
+const createYourAssistantName = () => createPersonaTemplate(
+  "Your Assistant Name",
+  "Role for this Assistant",
+  "Detailed expertise for this assistant",
+  `- List of capabilities for this assistant
+   - Tailor responses based on the niche group`,
+  "Professional, engaging, and niche-specific tone",
+  `- Behavior guidelines relevant to the target group
+   - Provide actionable insights and recommendations for users`
+);
+
+	2.	Modify Files in the Pages Folder
+	•	Update or add new pages for the specific niche assistants you are creating.
+	•	Ensure each page reflects the appropriate assistant’s features and purpose.
+	3.	Update NavHeader.jsx
+	•	This file manages all header navigation to various models.
+	•	Change the names, routes, and icons to match your new assistant pages.
+
+Example:
+
+const navigation = [
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'General Assistant', href: '/general-assistant', icon: Brain },
+  { name: 'Your Assistant Name', href: '/your-assistant-route', icon: YourIcon },
+];
+
+	4.	Update LandingPage.jsx
+	•	Modify the assistants array to include your new assistants.
+	•	Update descriptions, routes, and icons to reflect the new niche group.
+
+Example:
+
+{
+  name: 'Your Assistant Name',
+  role: 'Your Assistant Role',
+  description: 'Brief description of the assistant',
+  icon: YourIcon,
+  path: '/your-assistant-route',
+  color: 'bg-yourColor',
+}
+
+	5.	Update tooltip.jsx
+	•	Add tooltips for any new features, buttons, or assistant components.
+	•	Ensure consistency with existing tooltip styles.
+
+Example:
+
+<Tooltip>
+  <TooltipTrigger asChild>
+    <Button>Your New Feature</Button>
+  </TooltipTrigger>
+  <TooltipContent>Tooltip description for your new feature.</TooltipContent>
+</Tooltip>
+
+	6.	Update App.jsx
+	•	Ensure all new routes are added to the Routes configuration.
+
+Example:
+
+<Route path="/your-assistant-route" element={<YourAssistantPage />} />
+
+	7.	Update FeaturesModal.jsx (located in the Modals folder)
+	•	Add details for any new features related to the assistants.
+	•	Update the modal content to reflect niche-specific details.
+	8.	Update index.html
+	•	Optimize the title, meta tags, and SEO content for the new niche group.
+	•	Update the description, keywords, and any favicon details.
+
+Example:
+
+<title>Your New App Title</title>
+<meta name="description" content="Brief description about your new niche assistants" />
+<meta name="keywords" content="new, niche, assistant, ai, app" />
+
+Additional Notes:
+	•	Test all updates across devices for responsiveness and accessibility.
+	•	Validate the changes using your browser’s developer tools to ensure there are no errors.
+	•	Update any documentation to reflect the changes made for the new niche group.
+
