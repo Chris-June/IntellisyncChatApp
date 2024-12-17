@@ -26,7 +26,7 @@ const NameInputModal = ({ isOpen, onSubmit }) => {
             <div className="w-full max-w-lg">
               <div className="bg-background rounded-lg shadow-lg p-6">
                 <h2 className="text-lg font-semibold mb-4">
-                  Welcome to SME Business Assistant
+                  Welcome to Intellisync Solutions Business Assistants
                 </h2>
                 <p className="text-muted-foreground mb-4">
                   Please enter your name to get started

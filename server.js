@@ -102,13 +102,23 @@ app.post('/api/chat', async (req, res) => {
 
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
-        if (content) {
-          accumulatedContent += content;
-          res.write(`data: ${JSON.stringify({ content: accumulatedContent })}\n\n`);
-        }
+        accumulatedContent += content;
+        
+        // Format the accumulated content
+        const formattedContent = formatAIResponse(accumulatedContent);
+        
+        // Send the formatted content
+        res.write(`data: ${JSON.stringify({
+          content: formattedContent,
+          done: false
+        })}\n\n`);
       }
 
-      res.write(`data: ${JSON.stringify({ content: accumulatedContent, done: true })}\n\n`);
+      // Send the final message
+      res.write(`data: ${JSON.stringify({
+        content: formatAIResponse(accumulatedContent),
+        done: true
+      })}\n\n`);
       res.end();
     } catch (error) {
       console.error('Chat error:', error);

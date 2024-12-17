@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { cn } from '../../lib/utils';
 import { Bot, User, Volume2, VolumeX } from 'lucide-react';
 import AudioOutput from './AudioOutput';
+import DOMPurify from 'dompurify';
 
 const ChatMessage = ({ message, isAudioEnabled }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -39,8 +40,8 @@ const ChatMessage = ({ message, isAudioEnabled }) => {
             </button>
           )}
         </div>
-        <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
-          {message.content}
+        <div className="text-sm prose prose-sm dark:prose-invert max-w-none"
+             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.content) }}>
         </div>
         {!isUser && isAudioEnabled && isPlaying && (
           <AudioOutput
