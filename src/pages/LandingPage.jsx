@@ -3,103 +3,103 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ArrowRight,
-  Brain,
-  Briefcase,
-  DollarSign,
-  Users,
-  Building,
-  TrendingUp,
-  Megaphone,
-  FileText,
-  Settings
+  BookOpen,
+  Languages,
+  Globe,
+  GraduationCap,
+  Heart,
+  BookText,
+  Calculator,
+  Microscope,
+  Users
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import Footer from '../components/Layout/Footer';
 import FeatureModal from '../components/Modals/FeatureModal';
 
 const iconComponents = {
-  Brain,
-  Briefcase,
-  DollarSign,
-  Users,
-  Building,
-  TrendingUp,
-  Megaphone,
-  FileText,
-  Settings
+  BookOpen,
+  Languages,
+  Globe,
+  GraduationCap,
+  Heart,
+  BookText,
+  Calculator,
+  Microscope,
+  Users
 };
 
 const assistants = [
   {
-    name: 'Intellisync Solutions',
-    role: 'General Assistant',
-    description: 'Your versatile AI companion for business support',
-    icon: 'Brain', // General-purpose assistant
-    path: '/general-assistant',
+    name: 'English Assistant',
+    role: 'Language & Literature Expert',
+    description: 'Master English language, literature, and writing skills',
+    icon: 'BookOpen',
+    path: '/english',
     color: 'bg-blue-500'
   },
   {
-    name: 'CEO Assistant',
-    role: 'Strategic Advisor',
-    description: 'Guidance for vision setting and leadership',
-    icon: 'Briefcase', // Leadership and executive strategy
-    path: '/ceo-assistant',
+    name: 'French Language Assistant',
+    role: 'French Language Expert',
+    description: 'Learn French through interactive conversations and lessons',
+    icon: 'Languages',
+    path: '/french',
     color: 'bg-purple-500'
   },
   {
-    name: 'CFO Assistant',
-    role: 'Financial Expert',
-    description: 'Insights into budgeting, forecasting, and financial planning',
-    icon: 'DollarSign', // Finance and budgeting
-    path: '/cfo-assistant',
+    name: 'Geography Assistant',
+    role: 'Geography Expert',
+    description: 'Explore world geography, cultures, and environments',
+    icon: 'Globe',
+    path: '/geography',
     color: 'bg-green-500'
   },
   {
-    name: 'HR Assistant',
-    role: 'HR Specialist',
-    description: 'Support for employee management and organizational culture',
-    icon: 'Users', // Employee management and HR
-    path: '/hr-assistant',
+    name: 'Guidance Counselor Assistant',
+    role: 'Academic & Career Advisor',
+    description: 'Get guidance on academic and career planning',
+    icon: 'GraduationCap',
+    path: '/guidance',
     color: 'bg-pink-500'
   },
   {
-    name: 'Employee Relations Assistant',
-    role: 'Conflict Resolver',
-    description: 'Promoting workplace harmony and employee engagement',
-    icon: 'Building', // Office/building icon for employee relations
-    path: '/employee-relations-assistant',
+    name: 'Health Wellness Assistant',
+    role: 'Health Education Expert',
+    description: 'Learn about health, wellness, and physical education',
+    icon: 'Heart',
+    path: '/health-wellness',
     color: 'bg-red-500'
   },
   {
-    name: 'Sales Manager Assistant',
-    role: 'Sales Strategist',
-    description: 'Data-backed strategies to drive revenue growth',
-    icon: 'TrendingUp', // Sales growth and revenue trends
-    path: '/sales-manager-assistant',
+    name: 'History Assistant',
+    role: 'History Expert',
+    description: 'Discover and understand historical events and contexts',
+    icon: 'BookText',
+    path: '/history',
     color: 'bg-yellow-500'
   },
   {
-    name: 'CMO Assistant',
-    role: 'Marketing Expert',
-    description: 'Creative solutions for marketing and brand strategy',
-    icon: 'Megaphone', // Marketing and outreach
-    path: '/cmo-assistant',
+    name: 'Math Assistant',
+    role: 'Mathematics Expert',
+    description: 'Master mathematics from basic to advanced concepts',
+    icon: 'Calculator',
+    path: '/math',
     color: 'bg-indigo-500'
   },
   {
-    name: 'Legal Advisor Assistant',
-    role: 'Legal Expert',
-    description: 'Compliance, contracts, and risk management guidance',
-    icon: 'FileText', // Legal documents and compliance
-    path: '/legal-advisor-assistant',
+    name: 'Science Assistant',
+    role: 'Science Expert',
+    description: 'Explore scientific concepts across various disciplines',
+    icon: 'Microscope',
+    path: '/science',
     color: 'bg-orange-500'
   },
   {
-    name: 'Operations Manager Assistant',
-    role: 'Operational Optimizer',
-    description: 'Process improvements and operational planning support',
-    icon: 'Settings', // Settings icon for operations and efficiency
-    path: '/operations-manager-assistant',
+    name: 'Social Studies Assistant',
+    role: 'Social Studies Expert',
+    description: 'Understand society, civics, and social phenomena',
+    icon: 'Users',
+    path: '/social-studies',
     color: 'bg-teal-500'
   }
 ];
@@ -121,9 +121,9 @@ const LandingPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                Intellisync AI-Powered
+                AI-Powered
                 <br />
-                Executive Assistants
+                Education Assistants
               </motion.h1>
               <motion.p 
                 className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto"
@@ -131,7 +131,7 @@ const LandingPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-               Experience the power of specialized Executive AI Assistants, each expertly tailored to support your business needs—from strategic decision-making and financial planning to employee management and marketing strategy.
+                Experience personalized learning with our specialized Education AI Assistants. From mathematics and sciences to literature and test preparation, get expert guidance tailored to your educational journey.
               </motion.p>
               <motion.div 
                 className="mt-10"
@@ -155,12 +155,12 @@ const LandingPage = () => {
     <h2 className="text-3xl font-bold text-center mb-12">Key Features</h2>
     <div className="grid md:grid-cols-3 gap-8">
       {[
-        "Personal Connection",
-        "Specialized Expertise",
-        "Seamless Interaction",
-        "Strategic Insights",
-        "Proactive Suggestions",
-        "Enhanced Collaboration"
+        "Personalized Learning",
+        "Expert Knowledge",
+        "Interactive Learning",
+        "Progress Tracking",
+        "24/7 Availability",
+        "Multi-subject Support"
       ].map((feature, index) => (
         <motion.div 
           key={feature}
@@ -171,12 +171,12 @@ const LandingPage = () => {
         >
           <h3 className="text-xl font-semibold mb-3">{feature}</h3>
           <p className="text-muted-foreground mb-4">
-            {feature === "Personal Connection" && "Each assistant remembers your name and preferences for a truly personalized experience."}
-            {feature === "Specialized Expertise" && "Nine unique AI personalities, each with deep knowledge in their respective fields."}
-            {feature === "Seamless Interaction" && "Natural conversations with context-aware responses and helpful suggestions."}
-            {feature === "Strategic Insights" && "Access actionable data-driven insights to make informed business decisions with confidence."}
-            {feature === "Proactive Suggestions" && "Receive proactive recommendations tailored to your business goals, challenges, and opportunities."}
-            {feature === "Enhanced Collaboration" && "Seamlessly integrate with your team, enhancing collaboration and streamlining workflows."}
+            {feature === "Personalized Learning" && "Adaptive learning paths tailored to your unique needs and learning style."}
+            {feature === "Expert Knowledge" && "Access to deep subject expertise across multiple academic disciplines."}
+            {feature === "Interactive Learning" && "Engage in dynamic conversations and receive instant feedback on your work."}
+            {feature === "Progress Tracking" && "Monitor your academic growth with detailed progress tracking and analytics."}
+            {feature === "24/7 Availability" && "Get help whenever you need it, day or night, without scheduling constraints."}
+            {feature === "Multi-subject Support" && "Comprehensive assistance across various subjects and academic levels."}
           </p>
           <Button 
             variant="outline" 
