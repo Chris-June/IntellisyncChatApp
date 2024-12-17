@@ -1,23 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  BarChart, Bar, Legend, LineChart, Line
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import {
-  AcademicCapIcon,
   ChartBarIcon,
-  ClockIcon,
-  FireIcon,
-  LightBulbIcon,
-  StarIcon,
   ShareIcon,
-  BellAlertIcon,
-  ChatBubbleLeftRightIcon,
   DocumentDuplicateIcon,
-  CalendarIcon,
-  TrophyIcon,
 } from '@heroicons/react/24/outline';
 import TeacherView from '../components/Dashboard/TeacherView';
 import ParentView from '../components/Dashboard/ParentView';
@@ -59,10 +48,10 @@ const Dashboard = () => {
   const COLORS = ['#FF6B6B', '#4ECDC4', '#96C93D', '#A18CD1'];
 
   const stats = [
-    { name: 'Total Study Hours', value: '124', icon: ClockIcon },
-    { name: 'Subjects Mastered', value: '4', icon: AcademicCapIcon },
-    { name: 'Current Streak', value: '12 days', icon: FireIcon },
-    { name: 'Achievement Points', value: '2,845', icon: StarIcon },
+    { name: 'Total Study Hours', value: '124', icon: null },
+    { name: 'Subjects Mastered', value: '4', icon: null },
+    { name: 'Current Streak', value: '12 days', icon: null },
+    { name: 'Achievement Points', value: '2,845', icon: null },
   ];
 
   const [selectedView, setSelectedView] = useState('student'); // 'student', 'teacher', 'parent'
@@ -182,6 +171,48 @@ const Dashboard = () => {
 
         {/* View Selector */}
         <ViewSelector />
+
+        {/* Quick Stats Summary */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 p-6 bg-gray-800 rounded-xl"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center">
+              <ChartBarIcon className="h-6 w-6 mr-2 text-indigo-500" />
+              Quick Stats Overview
+            </h2>
+            <button
+              onClick={() => {/* Add export functionality */}}
+              className="flex items-center space-x-2 text-gray-400 hover:text-white"
+            >
+              <DocumentDuplicateIcon className="h-5 w-5" />
+              <span>Export Stats</span>
+            </button>
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={learningProgress}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                <XAxis dataKey="name" stroke="#888" />
+                <YAxis stroke="#888" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1f2937',
+                    border: 'none',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Legend />
+                <Bar dataKey="Mathematics" fill={gradientColors.mathematics[0]} />
+                <Bar dataKey="Science" fill={gradientColors.science[0]} />
+                <Bar dataKey="English" fill={gradientColors.english[0]} />
+                <Bar dataKey="French" fill={gradientColors.french[0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
 
         {/* Render the selected view */}
         <AnimatePresence mode="wait">

@@ -6,9 +6,6 @@ import {
 } from 'recharts';
 import {
   UserGroupIcon,
-  ClockIcon,
-  FlagIcon,
-  ChartBarIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
@@ -82,9 +79,9 @@ const TeacherView = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { title: 'Class Size', value: '28 Students', icon: UserGroupIcon, color: 'blue' },
-          { title: 'Average Attendance', value: '94%', icon: ClockIcon, color: 'green' },
-          { title: 'Completion Rate', value: '87%', icon: FlagIcon, color: 'purple' },
-          { title: 'Class Average', value: '82%', icon: ChartBarIcon, color: 'yellow' },
+          { title: 'Average Attendance', value: '94%', icon: null, color: 'green' },
+          { title: 'Completion Rate', value: '87%', icon: null, color: 'purple' },
+          { title: 'Class Average', value: '82%', icon: null, color: 'yellow' },
         ].map((stat, index) => (
           <motion.div
             key={index}
@@ -94,9 +91,11 @@ const TeacherView = () => {
             className="bg-gray-800 rounded-xl p-6"
           >
             <div className="flex items-center">
-              <div className={`p-3 rounded-lg bg-${stat.color}-500/20`}>
-                <stat.icon className={`h-6 w-6 text-${stat.color}-500`} />
-              </div>
+              {stat.icon && (
+                <div className={`p-3 rounded-lg bg-${stat.color}-500/20`}>
+                  <stat.icon className={`h-6 w-6 text-${stat.color}-500`} />
+                </div>
+              )}
               <div className="ml-4">
                 <p className="text-gray-400 text-sm">{stat.title}</p>
                 <p className="text-2xl font-semibold">{stat.value}</p>
@@ -149,6 +148,53 @@ const TeacherView = () => {
                 dot={{ r: 4 }}
               />
             </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
+
+      {/* Student Progress Over Time */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gray-800 rounded-xl p-6 col-span-2"
+      >
+        <h2 className="text-xl font-semibold mb-4">Student Progress Trends</h2>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={classPerformance}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+              <XAxis dataKey="name" stroke="#888" />
+              <YAxis stroke="#888" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1f2937',
+                  border: 'none',
+                  borderRadius: '8px',
+                }}
+              />
+              <Legend />
+              <Area
+                type="monotone"
+                dataKey="Average"
+                stroke="#4ade80"
+                fill="#4ade80"
+                fillOpacity={0.2}
+              />
+              <Area
+                type="monotone"
+                dataKey="TopPerformer"
+                stroke="#60a5fa"
+                fill="#60a5fa"
+                fillOpacity={0.2}
+              />
+              <Area
+                type="monotone"
+                dataKey="NeedsSupport"
+                stroke="#f472b6"
+                fill="#f472b6"
+                fillOpacity={0.2}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </motion.div>
