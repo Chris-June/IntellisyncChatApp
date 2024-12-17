@@ -13,7 +13,7 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Intellisync Solutions</h3>
             <p className="text-sm text-muted-foreground">
-              Empowering businesses with intelligent AI solutions.
+              Empowering communities with intelligent AI solutions.
             </p>
             <div className="flex space-x-4">
               <a
