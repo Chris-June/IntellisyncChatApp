@@ -7,6 +7,10 @@ import {
   ChartBarIcon,
   ShareIcon,
   DocumentDuplicateIcon,
+  ClockIcon,
+  AcademicCapIcon,
+  FireIcon,
+  TrophyIcon,
 } from '@heroicons/react/24/outline';
 import TeacherView from '../components/Dashboard/TeacherView';
 import ParentView from '../components/Dashboard/ParentView';
@@ -48,10 +52,10 @@ const Dashboard = () => {
   const COLORS = ['#FF6B6B', '#4ECDC4', '#96C93D', '#A18CD1'];
 
   const stats = [
-    { name: 'Total Study Hours', value: '124', icon: null },
-    { name: 'Subjects Mastered', value: '4', icon: null },
-    { name: 'Current Streak', value: '12 days', icon: null },
-    { name: 'Achievement Points', value: '2,845', icon: null },
+    { name: 'Total Study Hours', value: '124', icon: ClockIcon },
+    { name: 'Subjects Mastered', value: '4', icon: AcademicCapIcon },
+    { name: 'Current Streak', value: '12 days', icon: FireIcon },
+    { name: 'Achievement Points', value: '2,845', icon: TrophyIcon },
   ];
 
   const [selectedView, setSelectedView] = useState('student'); // 'student', 'teacher', 'parent'
