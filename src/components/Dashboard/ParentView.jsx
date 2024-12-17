@@ -7,6 +7,17 @@ import {
 import {
   BookOpenIcon,
   StarIcon,
+  CalendarIcon,
+  BellIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  AcademicCapIcon,
+  ChartBarIcon,
+  TrophyIcon,
+  BeakerIcon,
+  FireIcon,
+  ChatBubbleLeftRightIcon,
+  LightBulbIcon,
 } from '@heroicons/react/24/outline';
 
 const ParentView = ({
@@ -34,13 +45,29 @@ const ParentView = ({
     color: COLORS[index % COLORS.length]
   }));
 
-  // Transform upcomingEvents for assignments
+  // Sample upcoming assignments data
   const upcomingAssignments = upcomingEvents.map(event => ({
-    subject: event.type === 'assessment' ? event.title.split(' ')[0] : 'General',
     title: event.title,
     dueDate: event.date,
-    status: 'pending'
+    status: 'Pending',
+    icon: event.type === 'assessment' ? AcademicCapIcon : 
+          event.type === 'deadline' ? ClockIcon : 
+          event.type === 'meeting' ? CalendarIcon : ChartBarIcon
   }));
+
+  // Map achievement icons
+  const achievementIcons = {
+    '🏆': TrophyIcon,
+    '🔥': FireIcon,
+    '🔬': BeakerIcon,
+  };
+
+  // Map notification type to icons
+  const notificationIcons = {
+    achievement: TrophyIcon,
+    reminder: BellIcon,
+    feedback: ChatBubbleLeftRightIcon,
+  };
 
   return (
     <div className="space-y-8">
@@ -218,7 +245,7 @@ const ParentView = ({
               >
                 <div className="flex items-center space-x-4">
                   <div className={`p-2 rounded-full bg-${COLORS[index % COLORS.length]}/20`}>
-                    <CalendarIcon className={`h-6 w-6 text-${COLORS[index % COLORS.length]}`} />
+                    <assignment.icon className={`h-6 w-6 text-${COLORS[index % COLORS.length]}`} />
                   </div>
                   <div>
                     <p className="font-medium">{assignment.title}</p>
@@ -242,22 +269,25 @@ const ParentView = ({
       >
         <h2 className="text-xl font-semibold mb-4">Recent Achievements</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {achievements.map((achievement, index) => (
-            <div
-              key={index}
-              className="bg-gray-700 rounded-lg p-4 flex items-start space-x-4"
-            >
-              <div className="flex-shrink-0">
-                <div className="p-2 bg-yellow-500/20 rounded-full">
-                  <TrophyIcon className="h-6 w-6 text-yellow-500" />
+          {achievements.map((achievement, index) => {
+            const IconComponent = achievementIcons[achievement.icon] || TrophyIcon;
+            return (
+              <div
+                key={index}
+                className="bg-gray-700 rounded-lg p-4 flex items-start space-x-4"
+              >
+                <div className="flex-shrink-0">
+                  <div className="p-2 bg-yellow-500/20 rounded-full">
+                    <IconComponent className="h-6 w-6 text-yellow-500" />
+                  </div>
+                </div>
+                <div>
+                  <p className="font-medium">{achievement.title}</p>
+                  <p className="text-sm text-gray-400">{achievement.description}</p>
                 </div>
               </div>
-              <div>
-                <p className="font-medium">{achievement.title}</p>
-                <p className="text-sm text-gray-400">{achievement.description}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </motion.div>
 
@@ -269,22 +299,27 @@ const ParentView = ({
       >
         <h2 className="text-xl font-semibold mb-4">Teacher Messages</h2>
         <div className="space-y-4">
-          {notifications.map((notification, index) => (
-            <div
-              key={index}
-              className="flex items-start space-x-4 bg-gray-700 rounded-lg p-4"
-            >
-              <div className="flex-shrink-0">
-                <div className="p-2 bg-blue-500/20 rounded-full">
-                  <ChatBubbleLeftRightIcon className="h-6 w-6 text-blue-500" />
+          {notifications.map((notification, index) => {
+            const IconComponent = notificationIcons[notification.type] || ChatBubbleLeftRightIcon;
+            return (
+              <div
+                key={index}
+                className="flex items-start space-x-4 bg-gray-700 rounded-lg p-4"
+              >
+                <div className="flex-shrink-0">
+                  <div className="p-2 bg-blue-500/20 rounded-full">
+                    <IconComponent className="h-6 w-6 text-blue-500" />
+                  </div>
+                </div>
+                <div>
+                  <p className="font-medium">
+                    {notification.type === 'feedback' ? 'Teacher Feedback' : notification.type}
+                  </p>
+                  <p className="text-sm text-gray-400">{notification.message}</p>
                 </div>
               </div>
-              <div>
-                <p className="font-medium">{notification.type === 'feedback' ? 'Teacher Feedback' : notification.type}</p>
-                <p className="text-sm text-gray-400">{notification.message}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </motion.div>
     </div>
