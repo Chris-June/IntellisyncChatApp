@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { TooltipProvider } from './components/ui/tooltip';
 import NavHeader from './components/Navigation/NavHeader';
 import LandingPage from './pages/LandingPage';
+import Dashboard from './pages/Dashboard';
 
 // Import Educational Assistant pages
 import MathAssistant from './pages/MathAssistant';
@@ -37,6 +38,7 @@ function App() {
         <div className="min-h-screen bg-background text-foreground">
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/dashboard" element={<PageWithNav><Dashboard /></PageWithNav>} />
             <Route path="/guidance-counselor" element={<PageWithNav><GuidanceCouncilorAssistant /></PageWithNav>} />
             <Route path="/english" element={<PageWithNav><EnglishAssistant /></PageWithNav>} />
             <Route path="/french-language" element={<PageWithNav><FrenchLanguageAssistant /></PageWithNav>} />

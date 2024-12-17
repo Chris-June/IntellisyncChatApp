@@ -43,7 +43,7 @@ const assistants = [
     role: 'French Language Expert',
     description: 'Learn French through interactive conversations and lessons',
     icon: 'Languages',
-    path: '/french',
+    path: '/french-language',
     color: 'bg-purple-500'
   },
   {
@@ -59,7 +59,7 @@ const assistants = [
     role: 'Academic & Career Advisor',
     description: 'Get guidance on academic and career planning',
     icon: 'GraduationCap',
-    path: '/guidance',
+    path: '/guidance-counselor',
     color: 'bg-pink-500'
   },
   {

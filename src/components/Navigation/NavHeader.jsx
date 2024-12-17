@@ -11,12 +11,14 @@ import {
   BookText,
   Calculator,
   Microscope,
-  Users
+  Users,
+  BarChart2
 } from 'lucide-react';
 
 // Change the names to match your new routes.
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
+  { name: 'Dashboard', href: '/dashboard', icon: BarChart2 },
   { name: 'Guidance Counselor', href: '/guidance-counselor', icon: GraduationCap },
   { name: 'English', href: '/english', icon: BookOpen },
   { name: 'French Language', href: '/french-language', icon: Languages },
