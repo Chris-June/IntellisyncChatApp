@@ -22,6 +22,7 @@ import SocialStudiesAssistant from './pages/SocialStudiesAssistant';
 import GuidanceCouncilorAssistant from './pages/GuidanceCouncilorAssistant';
 import GeographyAssistant from './pages/GeographyAssistant';
 import HealthWellnessAssistant from './pages/HealthWellnessAssistant';
+// add remaining assistants
 
 const PageWithNav = ({ children }) => {
   React.useEffect(() => {

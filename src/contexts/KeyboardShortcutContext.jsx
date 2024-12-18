@@ -27,6 +27,7 @@ export const KeyboardShortcutProvider = ({ children }) => {
       action: () => setShowShortcuts(true), 
       description: 'Show keyboard shortcuts'
     },
+    // Add more shortcuts for remaining pages.
     'Escape': {
       action: () => setShowShortcuts(false),
       description: 'Close keyboard shortcuts'

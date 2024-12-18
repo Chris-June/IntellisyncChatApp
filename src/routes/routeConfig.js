@@ -8,6 +8,7 @@ import HistoryAssistant from '../pages/HistoryAssistant';
 import MathAssistant from '../pages/MathAssistant';
 import ScienceAssistant from '../pages/ScienceAssistant';
 import SocialStudiesAssistant from '../pages/SocialStudiesAssistant';
+//update routes and breadcrumbs as you add new assistants
 
 export const routes = [
   {
