@@ -7,6 +7,12 @@ import {
 import {
   BookOpenIcon,
   StarIcon,
+  CalendarIcon,
+  ClockIcon,
+  AcademicCapIcon,
+  TrophyIcon,
+  ChatBubbleLeftRightIcon,
+  BellAlertIcon
 } from '@heroicons/react/24/outline';
 
 const ParentView = ({
@@ -20,6 +26,30 @@ const ParentView = ({
   achievements,
   learningRecommendations
 }) => {
+  // If stats is empty or undefined, provide a default
+  const displayStats = stats && stats.length > 0 ? stats : [
+    { 
+      name: 'Total Study Hours', 
+      value: '124', 
+      icon: ClockIcon 
+    },
+    { 
+      name: 'Subjects Tracked', 
+      value: '4', 
+      icon: AcademicCapIcon 
+    },
+    { 
+      name: 'Achievements', 
+      value: '12', 
+      icon: TrophyIcon 
+    },
+    { 
+      name: 'Learning Progress', 
+      value: '85%', 
+      icon: BookOpenIcon 
+    },
+  ];
+
   // Transform learning progress data for parent view
   const progressOverview = learningProgress.map(week => ({
     name: week.name,
@@ -46,7 +76,7 @@ const ParentView = ({
     <div className="space-y-8">
       {/* Parent Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
+        {displayStats.map((stat, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 20 }}

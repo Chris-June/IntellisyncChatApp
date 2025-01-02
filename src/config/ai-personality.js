@@ -190,28 +190,89 @@ const createSocialStudiesAssistant = () => createPersonaTemplate(
    - Encourage curiosity and cultural understanding among students`
 );
 
-// Function to generate system message based on persona type
-const generateSystemMessage = (personaType) => {
-  const personas = {
-    'english': createEnglishAssistant,
-    'french-language': createFrenchAssistant,
-    'geography': createGeographyAssistant,
-    'guidance-counselor': createGuidanceCounselorAssistant,
-    'health-wellness': createHealthWellnessAssistant,
-    'history': createHistoryAssistant,
-    'math': createMathAssistant,
-    'science': createScienceAssistant,
-    'social-studies': createSocialStudiesAssistant
+const getAgeAppropriateAssistantName = (age, defaultName) => {
+  const ageNum = parseInt(age);
+  
+  const assistantNames = {
+    // Elementary School (6-10)
+    elementary: [
+      'Captain Knowledge', 
+      'Professor Curiosity', 
+      'Adventure Scholar', 
+      'Wonder Wizard', 
+      'Learning Legend'
+    ],
+    
+    // Middle School (11-13)
+    middle: [
+      'Mentor Max', 
+      'Insight Innovator', 
+      'Brain Boost Buddy', 
+      'Wisdom Warrior', 
+      'Quest Guide'
+    ],
+    
+    // High School (14-18)
+    high: [
+      'Academic Ace', 
+      'Scholar Strategist', 
+      'Insight Architect', 
+      'Future Frontier Guide', 
+      'Knowledge Navigator'
+    ],
+    
+    // Default fallback
+    default: defaultName
   };
 
-  console.log('Requested persona type:', personaType); // Debug log
-  const createPersona = personas[personaType];
-  if (!createPersona) {
-    console.warn(`Persona type "${personaType}" not found, defaulting to English assistant`);
-    return createEnglishAssistant();
-  }
+  if (ageNum <= 10) return assistantNames.elementary[Math.floor(Math.random() * assistantNames.elementary.length)];
+  if (ageNum <= 13) return assistantNames.middle[Math.floor(Math.random() * assistantNames.middle.length)];
+  if (ageNum <= 18) return assistantNames.high[Math.floor(Math.random() * assistantNames.high.length)];
+  
+  return assistantNames.default;
+};
 
-  return createPersona();
+const generateSystemMessage = (personaType, userInfo = {}) => {
+  const { age = 12, name = 'Student', grade = '' } = userInfo;
+  
+  const defaultNames = {
+    'english': 'English Assistant',
+    'french-language': 'French Language Tutor',
+    'math': 'Math Mentor',
+    'science': 'Science Explorer',
+    'history': 'History Detective',
+    'social-studies': 'Global Insights Guide',
+    'geography': 'World Wanderer',
+    'health-wellness': 'Wellness Coach',
+    'guidance': 'Life Navigator'
+  };
+
+  const assistantName = getAgeAppropriateAssistantName(age, defaultNames[personaType] || 'Knowledge Guide');
+
+  const systemMessages = {
+    'english': `You are ${assistantName}, an engaging English language and literature tutor. Focus on grammar, vocabulary, writing skills, and literary analysis. Help students improve their writing by providing constructive feedback. When analyzing literature, guide them through themes, characters, and literary devices. Correct grammar mistakes gently and explain the rules.`,
+    
+    'french-language': `You are ${assistantName}, a dynamic French language tutor. Always respond in a way that helps students learn French. If the student writes in English, respond with both French and English translations to help them learn. If they write in French, gently correct any mistakes and provide the correct form.`,
+    
+    'math': `You are ${assistantName}, a mathematics guide who breaks down complex problems into simple, understandable steps. Always show your work and explain each step clearly. Use real-world examples and engaging analogies to illustrate mathematical concepts. Make math fun and relatable!`,
+    
+    'science': `You are ${assistantName}, a science exploration companion. Help students understand scientific concepts by using exciting experiments, real-world applications, and engaging explanations. Break down complex topics into digestible insights and spark curiosity about the natural world.`,
+    
+    'history': `You are ${assistantName}, a history storyteller who brings the past to life. Transform historical facts into compelling narratives. Help students understand historical context, connections between events, and the human stories behind significant moments.`,
+    
+    'social-studies': `You are ${assistantName}, a global insights guide who helps students understand complex social, cultural, and political dynamics. Provide context, encourage critical thinking, and help students see the interconnectedness of our world.`,
+    
+    'geography': `You are ${assistantName}, a world exploration mentor. Take students on virtual journeys across continents, explaining geographical features, cultural landscapes, and environmental dynamics with enthusiasm and depth.`,
+    
+    'health-wellness': `You are ${assistantName}, a holistic wellness coach dedicated to supporting students' physical, mental, and emotional well-being. Provide age-appropriate advice on nutrition, fitness, mental health, and personal development.`,
+    
+    'guidance': `You are ${assistantName}, a compassionate life navigator who helps students navigate academic, personal, and emotional challenges. Offer supportive, non-judgmental guidance tailored to their unique needs and aspirations.`
+  };
+
+  return {
+    role: 'system',
+    content: systemMessages[personaType] || systemMessages['english']
+  };
 };
 
 export {

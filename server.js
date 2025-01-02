@@ -35,7 +35,24 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5174' : 'http://localhost:5174',
+  origin: function(origin, callback){
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if(!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://localhost:5173', 
+      'http://localhost:5174', 
+      'http://127.0.0.1:5173', 
+      'http://127.0.0.1:5174'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -47,10 +64,28 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// List of supported models
+const SUPPORTED_MODELS = {
+  'gpt-4': 'GPT-4',
+  'gpt-4-1106-preview': 'GPT-4 Turbo',
+  'gpt-3.5-turbo': 'GPT-3.5 Turbo',
+  'gpt-3.5-turbo-1106': 'GPT-3.5 Turbo Latest',
+  'gpt-4o-mini': 'GPT-4o Mini'
+};
+
 // Verify API key is configured
 if (!process.env.OPENAI_API_KEY) {
   console.error('OpenAI API key is not configured in .env file');
   process.exit(1);
+}
+
+// Verify model configuration
+const configuredModel = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
+console.log('Configured OpenAI Model:', configuredModel);
+console.log('Supported Models:', Object.keys(SUPPORTED_MODELS));
+
+if (!SUPPORTED_MODELS[configuredModel]) {
+  console.warn(`Warning: Configured model "${configuredModel}" is not in supported model list. Falling back to gpt-3.5-turbo`);
 }
 
 // Chat endpoint
@@ -86,7 +121,7 @@ app.post('/api/chat', async (req, res) => {
     });
 
     const stream = await openai.chat.completions.create({
-      model: "gpt-4-1106-preview",
+      model: SUPPORTED_MODELS[configuredModel] ? configuredModel : 'gpt-3.5-turbo',
       messages: [
         systemMessage,
         {
@@ -145,12 +180,20 @@ app.post('/api/chat', async (req, res) => {
     res.end();
   } catch (error) {
     console.error('Chat error:', error);
+    const errorMessage = {
+      error: error.message || 'An error occurred during the chat.',
+      code: error.code,
+      type: error.type,
+      param: error.param,
+      statusCode: error.status || 500
+    };
+
     // Only send error response if headers haven't been sent
     if (!res.headersSent) {
-      res.status(500).json({ error: 'An error occurred during the chat.' });
+      res.status(errorMessage.statusCode).json(errorMessage);
     } else {
-      // If headers were already sent, just end the stream with an error message
-      res.write(`data: ${JSON.stringify({ error: 'An error occurred during the chat.', done: true })}\n\n`);
+      // If headers were already sent, send error in stream format
+      res.write(`data: ${JSON.stringify({ ...errorMessage, done: true })}\n\n`);
       res.end();
     }
   }
@@ -216,6 +259,36 @@ app.get('/api/download-image', async (req, res) => {
   } catch (error) {
     console.error('Error downloading image:', error);
     res.status(500).json({ error: 'Failed to download image' });
+  }
+});
+
+// Test OpenAI connection endpoint
+app.get('/api/test-openai', async (req, res) => {
+  try {
+    const completion = await openai.chat.completions.create({
+      messages: [{ role: "user", content: "Hello, this is a test message. Please respond with 'OpenAI connection successful!'" }],
+      model: SUPPORTED_MODELS[configuredModel] ? configuredModel : 'gpt-3.5-turbo',
+      max_tokens: 50
+    });
+
+    res.json({
+      status: 'success',
+      message: 'OpenAI connection test successful',
+      response: completion.choices[0].message.content,
+      model: completion.model,
+      usage: completion.usage
+    });
+  } catch (error) {
+    console.error('OpenAI test error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'OpenAI connection test failed',
+      error: {
+        message: error.message,
+        type: error.type,
+        code: error.code
+      }
+    });
   }
 });
 
